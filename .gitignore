@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Builds
+dist/
+build/
+web-build/
+*.tsbuildinfo
+
+# Expo / React Native
+.expo/
+.expo-web/
+ios/
+android/
+*.orig.*
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Local agent tooling (machine-specific)
+.agents/
+.opencode/
+skills-lock.json
+
+# Coverage / test artifacts
+coverage/
+
+# Temporary
+tmp/
+.tmp/
