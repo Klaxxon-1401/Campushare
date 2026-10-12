@@ -180,7 +180,12 @@ export const ReviewsScreen: React.FC<StackScreenProps<'Reviews'>> = ({ navigatio
               <View key={p.booking.id} style={styles.card}>
                 <View style={styles.cardTop}>
                   <Text style={styles.title} numberOfLines={1}>{p.booking.itemTitle}</Text>
-                  {p.reviewed && <Text style={styles.doneTag}>Reviewed ✓</Text>}
+                  {p.reviewed && (
+                    <View style={styles.doneTagWrap}>
+                      <Feather name="check" size={12} color={colors.accent.main} />
+                      <Text style={styles.doneTag}>Reviewed</Text>
+                    </View>
+                  )}
                 </View>
                 <Text style={styles.sub}>with {other}</Text>
                 {!p.reviewed && (
@@ -265,6 +270,7 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.small,
     color: colors.neutral.textSecondary,
   },
+  doneTagWrap: { flexDirection: 'row', alignItems: 'center', gap: spacing[1] },
   doneTag: {
     fontFamily: typography.fonts.bodyBold,
     fontSize: typography.sizes.small,

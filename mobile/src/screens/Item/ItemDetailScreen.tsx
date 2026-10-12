@@ -15,7 +15,8 @@ import { api } from '../../services/api';
 import { CURRENT_USER } from '../../services/seed';
 import { AvailabilityState } from '../../types';
 import { StackScreenProps } from '../../navigation/types';
-import { CATEGORY_EMOJI, categoryLabel, formatMoney } from '../../utils/format';
+import { categoryLabel, formatMoney } from '../../utils/format';
+import { CATEGORY_ICONS } from '../../constants/catalog';
 
 export const ItemDetailScreen: React.FC<StackScreenProps<'ItemDetail'>> = ({
   navigation,
@@ -73,7 +74,7 @@ export const ItemDetailScreen: React.FC<StackScreenProps<'ItemDetail'>> = ({
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Photo / placeholder */}
         <View style={styles.photo}>
-          <Text style={styles.photoEmoji}>{CATEGORY_EMOJI[item.category]}</Text>
+          <Feather name={CATEGORY_ICONS[item.category]} size={72} color={colors.neutral.textMuted} />
           <Badge
             label={categoryLabel(item.category)}
             variant="primary"
@@ -116,7 +117,10 @@ export const ItemDetailScreen: React.FC<StackScreenProps<'ItemDetail'>> = ({
                     <Text style={styles.verifiedText}>Verified</Text>
                   </View>
                 )}
-                <Text style={styles.rating}>★ {item.ownerRating.toFixed(1)}</Text>
+                <View style={styles.ratingRow}>
+                  <Feather name="star" size={13} color={colors.state.warning} />
+                  <Text style={styles.rating}>{item.ownerRating.toFixed(1)}</Text>
+                </View>
               </View>
             </View>
           </View>
@@ -194,7 +198,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  photoEmoji: { fontSize: 72 },
   photoBadge: { position: 'absolute', top: spacing[3], left: spacing[3] },
   body: { padding: spacing[4] },
   title: {
@@ -280,6 +283,7 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.small,
     color: colors.accent.main,
   },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[1] },
   rating: {
     fontFamily: typography.fonts.body,
     fontSize: typography.sizes.small,

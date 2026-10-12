@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { ItemCategory } from '../types';
 import { CATEGORY_LABELS } from '../utils/format';
 
@@ -14,6 +15,15 @@ export const CATEGORY_OPTIONS: CategoryOption[] = [
   { key: 'fitness', label: CATEGORY_LABELS.fitness },
   { key: 'other', label: CATEGORY_LABELS.other },
 ];
+
+/** Category glyphs used in listing placeholder art. */
+export const CATEGORY_ICONS: Record<ItemCategory, keyof typeof Feather.glyphMap> = {
+  academic: 'book',
+  clothing: 'shopping-bag',
+  electronics: 'cpu',
+  fitness: 'activity',
+  other: 'package',
+};
 
 export const CAMPUS_LOCATIONS = [
   'North Campus',

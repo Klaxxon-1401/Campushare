@@ -8,7 +8,8 @@ import { api } from '../../services/api';
 import { CURRENT_USER } from '../../services/seed';
 import { Item, ItemStatus } from '../../types';
 import { StackScreenProps } from '../../navigation/types';
-import { CATEGORY_EMOJI, formatMoney } from '../../utils/format';
+import { formatMoney } from '../../utils/format';
+import { CATEGORY_ICONS } from '../../constants/catalog';
 
 const STATUS_VARIANT: Record<ItemStatus, 'success' | 'warning' | 'primary' | 'error'> = {
   published: 'success',
@@ -55,7 +56,7 @@ export const MyListingsScreen: React.FC<StackScreenProps<'MyListings'>> = ({ nav
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.thumb}>
-          <Text style={styles.thumbEmoji}>{CATEGORY_EMOJI[item.category]}</Text>
+          <Feather name={CATEGORY_ICONS[item.category]} size={26} color={colors.primary.main} />
         </View>
         <View style={styles.cardInfo}>
           <Text style={styles.title} numberOfLines={2}>
@@ -169,7 +170,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  thumbEmoji: { fontSize: 24 },
   cardInfo: { flex: 1 },
   title: {
     fontFamily: typography.fonts.bodyBold,

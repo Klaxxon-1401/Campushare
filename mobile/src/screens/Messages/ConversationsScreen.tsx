@@ -78,8 +78,9 @@ export const ConversationsScreen: React.FC<StackScreenProps<'Conversations'>> = 
                     <Text style={styles.time}>{formatLong(item.lastMessageAt.slice(0, 10))}</Text>
                   </View>
                   <View style={styles.subRow}>
+                    <Feather name="package" size={12} color={colors.neutral.textMuted} />
                     <Text style={styles.itemTitle} numberOfLines={1}>
-                      📦 {item.itemTitle}
+                      {item.itemTitle}
                     </Text>
                   </View>
                 </View>
@@ -153,6 +154,7 @@ const styles = StyleSheet.create({
   subRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing[1],
     marginTop: 2,
   },
   itemTitle: {

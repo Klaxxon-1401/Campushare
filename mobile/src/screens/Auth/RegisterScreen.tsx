@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { colors, typography, spacing, borders } from '../../theme';
+import { Feather } from '@expo/vector-icons';
 import { Button, Input } from '../../components/ui';
 
 interface RegisterScreenProps {
@@ -51,7 +52,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backArrow}>←</Text>
+            <Feather name="arrow-left" size={24} color={colors.neutral.textPrimary} style={styles.backArrow} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Create Account</Text>
         </View>
@@ -63,7 +64,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
 
           {/* Trust Badge */}
           <View style={styles.trustBadge}>
-            <Text style={styles.trustBadgeText}>🛡️ University Verified Only</Text>
+            <Feather name="shield" size={12} color={colors.accent.main} />
+            <Text style={styles.trustBadgeText}>University Verified Only</Text>
           </View>
 
           {/* Form */}
@@ -182,6 +184,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing[4],
   },
   trustBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
     backgroundColor: `${colors.accent.main}1A`,
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[2],

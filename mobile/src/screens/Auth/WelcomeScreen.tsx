@@ -7,6 +7,7 @@ import {
   Image,
 } from 'react-native';
 import { colors, typography, spacing, borders } from '../../theme';
+import { Feather } from '@expo/vector-icons';
 import { Button } from '../../components/ui';
 
 interface WelcomeScreenProps {
@@ -21,7 +22,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
         <View style={styles.logoContainer}>
           <Text style={styles.logoText}>CampusShare</Text>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>✓ Verified</Text>
+            <Feather name="check" size={12} color={colors.accent.contrast} />
+            <Text style={styles.badgeText}>Verified</Text>
           </View>
         </View>
 
@@ -31,7 +33,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
         {/* Illustration placeholder */}
         <View style={styles.illustration}>
-          <Text style={styles.illustrationText}>🎓</Text>
+          <Feather name="book-open" size={72} color={colors.primary.main} />
         </View>
       </View>
 
@@ -79,6 +81,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing[2],
   },
   badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[1],
     backgroundColor: colors.accent.main,
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[1],
@@ -110,9 +115,6 @@ const styles = StyleSheet.create({
     borderRadius: borders.radius.xl,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  illustrationText: {
-    fontSize: 64,
   },
   actions: {
     paddingHorizontal: spacing[6],

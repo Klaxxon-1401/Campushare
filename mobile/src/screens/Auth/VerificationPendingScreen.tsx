@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { colors, typography, spacing, borders } from '../../theme';
+import { Feather } from '@expo/vector-icons';
 import { Button } from '../../components/ui';
 
 interface VerificationPendingScreenProps {
@@ -18,7 +19,7 @@ export const VerificationPendingScreen: React.FC<VerificationPendingScreenProps>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backArrow}>←</Text>
+          <Feather name="arrow-left" size={24} color={colors.neutral.textPrimary} style={styles.backArrow} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Verification</Text>
       </View>
@@ -27,7 +28,7 @@ export const VerificationPendingScreen: React.FC<VerificationPendingScreenProps>
       <View style={styles.content}>
         {/* Icon */}
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>⏳</Text>
+          <Feather name="clock" size={30} color={colors.primary.contrast} />
         </View>
 
         {/* Headlines */}
@@ -40,7 +41,7 @@ export const VerificationPendingScreen: React.FC<VerificationPendingScreenProps>
         <View style={styles.timeline}>
           <View style={styles.timelineItem}>
             <View style={[styles.timelineDot, styles.timelineDotCompleted]}>
-              <Text style={styles.timelineDotText}>✓</Text>
+              <Feather name="check" size={13} color={colors.accent.contrast} />
             </View>
             <Text style={styles.timelineText}>Email verified</Text>
           </View>
@@ -115,9 +116,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing[6],
   },
-  icon: {
-    fontSize: 32,
-  },
   headline: {
     fontFamily: typography.fonts.display,
     fontSize: typography.sizes.h3,
@@ -157,11 +155,7 @@ const styles = StyleSheet.create({
   timelineDotCurrent: {
     backgroundColor: colors.primary.main,
   },
-  timelineDotText: {
-    color: colors.accent.contrast,
-    fontSize: typography.sizes.small,
-    fontFamily: typography.fonts.bodyBold,
-  },
+
   timelineText: {
     fontFamily: typography.fonts.body,
     fontSize: typography.sizes.body,

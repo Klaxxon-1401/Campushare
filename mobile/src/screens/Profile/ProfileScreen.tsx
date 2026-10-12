@@ -51,7 +51,7 @@ export const ProfileScreen: React.FC<TabScreenProps<'Profile'>> = ({ navigation 
         <Text style={styles.name}>{user.name}</Text>
         <Text style={styles.email}>{user.campusEmail}</Text>
         <View style={styles.badgeRow}>
-          <Badge label="✓ Verified student" variant="success" size="small" />
+          <Badge label="Verified student" variant="success" size="small" />
           <View style={styles.ratingPill}>
             <Feather name="star" size={12} color={colors.state.warning} />
             <Text style={styles.ratingText}>

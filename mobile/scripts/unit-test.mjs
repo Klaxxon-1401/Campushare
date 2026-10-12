@@ -95,9 +95,9 @@ for (const [name, fn] of tests) {
   try {
     await fn();
     passed += 1;
-    console.log(`  ✓ ${name}`);
+    console.log(`  PASS  ${name}`);
   } catch (e) {
-    console.error(`  ✗ ${name}`);
+    console.error(`  FAIL  ${name}`);
     console.error(e.message);
     process.exitCode = 1;
   }

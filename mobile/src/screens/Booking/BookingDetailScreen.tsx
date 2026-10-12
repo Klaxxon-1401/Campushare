@@ -193,7 +193,12 @@ export const BookingDetailScreen: React.FC<StackScreenProps<'BookingDetail'>> = 
             {depositRefund && (
               <View style={styles.moneyRow}>
                 <Text style={styles.moneyLabel}>Deposit refund</Text>
-                <Text style={[styles.moneyValue, styles.moneyOk]}>✓ {formatMoney(depositRefund.amount)} returned</Text>
+                <View style={styles.moneyOkRow}>
+                  <Feather name="check" size={13} color={colors.accent.main} />
+                  <Text style={[styles.moneyValue, styles.moneyOk]}>
+                    {formatMoney(depositRefund.amount)} refunded
+                  </Text>
+                </View>
               </View>
             )}
           </View>
@@ -255,7 +260,7 @@ export const BookingDetailScreen: React.FC<StackScreenProps<'BookingDetail'>> = 
               <View style={styles.waitBox}>
                 <Feather name="clock" size={16} color={colors.accent.main} />
                 <Text style={styles.waitText}>
-                  Returned ✓ — {formatMoney(booking.deposit)} deposit refund pending lender release.
+                  Returned — {formatMoney(booking.deposit)} deposit refund pending lender release.
                 </Text>
               </View>
             )}
@@ -389,6 +394,7 @@ const styles = StyleSheet.create({
     color: colors.neutral.textPrimary,
   },
   moneyOk: { color: colors.accent.main },
+  moneyOkRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[1] },
   actions: { gap: spacing[3] },
   gap: { height: spacing[1] },
   waitBox: {

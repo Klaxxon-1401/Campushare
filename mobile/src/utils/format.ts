@@ -20,15 +20,6 @@ export const CATEGORY_LABELS: Record<ItemCategory, string> = {
   other: 'Other',
 };
 
-/** Emoji stand-in used while listings have no uploaded photos yet. */
-export const CATEGORY_EMOJI: Record<ItemCategory, string> = {
-  academic: '🔬',
-  clothing: '🧥',
-  electronics: '🧮',
-  fitness: '🏋️',
-  other: '📦',
-};
-
 export const categoryLabel = (c: ItemCategory): string => CATEGORY_LABELS[c];
 
 export const titleCase = (s: string): string =>

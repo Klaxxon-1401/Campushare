@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { colors, typography, spacing, borders } from '../theme';
 import { Item } from '../types';
-import { categoryLabel, CATEGORY_EMOJI, formatMoney } from '../utils/format';
+import { categoryLabel, formatMoney } from '../utils/format';
+import { CATEGORY_ICONS } from '../constants/catalog';
 import { Badge } from './ui';
 
 interface ItemCardProps {
@@ -15,7 +17,7 @@ interface ItemCardProps {
 export const ItemCard: React.FC<ItemCardProps> = ({ item, onPress, style }) => (
   <TouchableOpacity style={[styles.card, style]} onPress={onPress} activeOpacity={0.85}>
     <View style={styles.image}>
-      <Text style={styles.imageEmoji}>{CATEGORY_EMOJI[item.category]}</Text>
+      <Feather name={CATEGORY_ICONS[item.category]} size={40} color={colors.neutral.textMuted} />
       <Badge label={categoryLabel(item.category)} variant="primary" size="small" style={styles.badge} />
       {item.status === 'draft' && (
         <Badge label="Draft" variant="warning" size="small" style={styles.draftBadge} />
@@ -28,7 +30,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onPress, style }) => (
       </Text>
 
       <View style={styles.locationRow}>
-        <Text style={styles.pin}>📍</Text>
+        <Feather name="map-pin" size={13} color={colors.neutral.textSecondary} />
         <Text style={styles.location} numberOfLines={1}>
           {item.location}
         </Text>
@@ -63,9 +65,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  imageEmoji: {
-    fontSize: 40,
-  },
   badge: {
     position: 'absolute',
     top: spacing[2],
@@ -89,10 +88,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: spacing[2],
-  },
-  pin: {
-    fontSize: typography.sizes.small,
-    marginRight: spacing[1],
   },
   location: {
     flex: 1,

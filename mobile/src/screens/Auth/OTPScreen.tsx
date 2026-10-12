@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { colors, typography, spacing, borders } from '../../theme';
+import { Feather } from '@expo/vector-icons';
 import { Button } from '../../components/ui';
 
 interface OTPScreenProps {
@@ -75,7 +76,7 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backArrow}>←</Text>
+          <Feather name="arrow-left" size={24} color={colors.neutral.textPrimary} style={styles.backArrow} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Verify Email</Text>
       </View>
@@ -84,7 +85,7 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
       <View style={styles.content}>
         {/* Icon */}
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>✉️</Text>
+          <Feather name="mail" size={32} color={colors.primary.contrast} />
         </View>
 
         {/* Headlines */}
@@ -178,9 +179,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing[6],
-  },
-  icon: {
-    fontSize: 32,
   },
   headline: {
     fontFamily: typography.fonts.display,

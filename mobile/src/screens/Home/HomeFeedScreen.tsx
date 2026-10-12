@@ -43,7 +43,8 @@ export const HomeFeedScreen: React.FC<TabScreenProps<'Home'>> = ({ navigation })
         <View>
           <Text style={styles.logo}>CampusShare</Text>
           <View style={styles.verifiedRow}>
-            <Text style={styles.verified}>🛡️ University Verified Only</Text>
+            <Feather name="shield" size={12} color={colors.accent.main} />
+            <Text style={styles.verified}>University Verified Only</Text>
           </View>
         </View>
         <View style={styles.headerActions}>
@@ -142,6 +143,7 @@ const styles = StyleSheet.create({
   verifiedRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing[1],
     marginTop: spacing[1],
   },
   verified: {

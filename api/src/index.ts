@@ -90,8 +90,8 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 CampusShare API running on http://localhost:${PORT} (${isProd ? 'production' : 'development'})`);
-  console.log(`📚 Health check: http://localhost:${PORT}/health`);
+  console.log(`CampusShare API running on http://localhost:${PORT} (${isProd ? 'production' : 'development'})`);
+  console.log(`Health check: http://localhost:${PORT}/health`);
 });
 
 export default app;
