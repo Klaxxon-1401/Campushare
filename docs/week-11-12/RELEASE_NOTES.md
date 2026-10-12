@@ -46,7 +46,8 @@ cd android && ./gradlew assembleRelease           # needs Android SDK + JDK 17
 - [x] Typecheck + 13 mobile unit tests + 19 API smoke tests green
 - [x] Android JS bundle builds (Hermes)
 - [x] `eas.json` profiles configured
-- [ ] Produce APK via `eas build --profile preview` (or local `assembleRelease`)
+- [x] **APK produced locally** — `mobile/android/app/build/outputs/apk/release/app-release.apk`
+      (77 MB, `com.campusshare.app` v1.0.0, signed with the debug keystore, verified with aapt2/apksigner)
 - [ ] Demo walkthrough script from Week-6 seed data (see `docs/week-07/WEEK_TRACKER.md`)
 - [ ] Firestore + JWT integration (post-course deployment phase)
 
