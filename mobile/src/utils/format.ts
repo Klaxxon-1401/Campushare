@@ -1,8 +1,8 @@
 import { ItemCategory } from '../types';
 
-/** "$10" for whole dollars, "$3.50" otherwise. */
+/** "₹10" for whole rupees, "₹3.50" otherwise. */
 export const formatMoney = (n: number): string =>
-  Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`;
+  Number.isInteger(n) ? `₹${n}` : `₹${n.toFixed(2)}`;
 
 export const initials = (name: string): string =>
   name

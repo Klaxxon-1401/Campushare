@@ -63,7 +63,7 @@ t('todayISO is YYYY-MM-DD', () => {
 });
 
 // ---- pricing ---------------------------------------------------------------
-t('computePrice: 3 days × $10 + $20 deposit', () => {
+t('computePrice: 3 days × ₹10 + ₹20 deposit', () => {
   assert.deepEqual(pricing.computePrice(10, 20, '2026-10-20', '2026-10-22'), {
     days: 3,
     rentalFee: 30,
@@ -81,9 +81,9 @@ t('computePrice: zero deposit', () => {
 });
 
 // ---- formatting ------------------------------------------------------------
-t('formatMoney: whole dollars without decimals', () => {
-  assert.equal(fmt.formatMoney(10), '$10');
-  assert.equal(fmt.formatMoney(3.5), '$3.50');
+t('formatMoney: whole rupees without decimals', () => {
+  assert.equal(fmt.formatMoney(10), '₹10');
+  assert.equal(fmt.formatMoney(3.5), '₹3.50');
 });
 t('initials from full name', () => {
   assert.equal(fmt.initials('Devan D'), 'DD');

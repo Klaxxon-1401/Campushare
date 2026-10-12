@@ -51,7 +51,7 @@ Aim for mix across year of study and at least one international student.
 
 7. Imagine you rented a blazer and it came back with a stain. Walk me through what you'd want to happen — step by step.
 8. What would you want to see as proof of the item's condition before you handed it over? *[leads to condition-photo concept]*
-9. If a deposit of $30 was held by the app and returned in 48h, would that feel safe or risky? What amount would make you uncomfortable?
+9. If a deposit of ₹30 was held by the app and returned in 48h, would that feel safe or risky? What amount would make you uncomfortable?
 10. How important is it that the other person is a verified student vs. an anonymous stranger?
 
 ### Listing & Ease of Use (5 min)

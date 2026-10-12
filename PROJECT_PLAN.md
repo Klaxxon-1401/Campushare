@@ -58,11 +58,11 @@ University students frequently purchase items they use rarely or for a short per
 
 | Item | Typical use case | Purchase cost | Frequency of use |
 |------|------------------|---------------|------------------|
-| Lab coat | A handful of lab sessions per term | $20–40 | Rare |
-| Blazer | One interview / event | $40–120 | Rare |
-| Sunglasses | A single outdoor event | $10–40 | Rare |
-| Calculator (TI-84) | One exam period | $80–120 | Seasonal |
-| Dumbbells | A 2-week fitness challenge | $20–60 | Short burst |
+| Lab coat | A handful of lab sessions per term | ₹20–40 | Rare |
+| Blazer | One interview / event | ₹40–120 | Rare |
+| Sunglasses | A single outdoor event | ₹10–40 | Rare |
+| Calculator (TI-84) | One exam period | ₹80–120 | Seasonal |
+| Dumbbells | A 2-week fitness challenge | ₹20–60 | Short burst |
 
 Buying new items for occasional use wastes money, storage, and materials. Borrowing informally from friends is common but has no accountability: no evidence of item condition at hand-off, no agreed rental terms, and no recourse if an item is returned damaged or lost.
 
@@ -397,8 +397,8 @@ erDiagram
 | title | string | |
 | category | enum | `academic`, `clothing`, `electronics`, `fitness`, `other` |
 | description | string | |
-| pricePerDay | number | USD |
-| deposit | number | USD |
+| pricePerDay | number | INR |
+| deposit | number | INR |
 | status | enum | `draft`, `published`, `booked`, `inactive` |
 | photos | array<ref> | item photos |
 | location | string | campus zone (e.g., North Campus) |
@@ -449,7 +449,7 @@ erDiagram
 | id | string | |
 | bookingId | ref → bookings | |
 | type | enum | `rental_fee`, `deposit_capture`, `deposit_refund`, `lender_payout` |
-| amount | number | USD |
+| amount | number | INR |
 | stripeIntentId | string | PaymentIntent / Transfer id |
 | status | enum | `pending`, `succeeded`, `failed`, `refunded`, `frozen` |
 | createdAt | timestamp | |
@@ -1049,23 +1049,23 @@ gantt
 
 | Item | Service | Est. Cost |
 |------|---------|-----------|
-| Auth (10k users) | Firebase Auth | $0 (free tier) |
-| Firestore | Firebase | $0–$10 |
-| Storage | Firebase Storage | $0–$5 |
-| Push | FCM | $0 |
-| Payments | Stripe | 2.9% + $0.30 per txn + Connect fees |
-| Hosting | Fly.io/Railway | $5–$25 |
-| **Total platform** | | **$10–$40/month** |
+| Auth (10k users) | Firebase Auth | ₹0 (free tier) |
+| Firestore | Firebase | ₹0–₹10 |
+| Storage | Firebase Storage | ₹0–₹5 |
+| Push | FCM | ₹0 |
+| Payments | Stripe | 2.9% + ₹0.30 per txn + Connect fees |
+| Hosting | Fly.io/Railway | ₹5–₹25 |
+| **Total platform** | | **₹10–₹40/month** |
 
 ### 20.2 One-Time / Development
 
 | Item | Cost |
 |------|------|
-| Domain (api.campusshare.app) | ~$12/yr |
-| Apple Developer Program (required for iOS) | ~$99/yr |
-| App Store / Play publishing | Play $25 (one-time) |
-| Marketing (campus flyers, incentives) | ~$100 |
-| **Total one-time** | **~$236 + tax** |
+| Domain (api.campusshare.app) | ~₹12/yr |
+| Apple Developer Program (required for iOS) | ~₹99/yr |
+| App Store / Play publishing | Play ₹25 (one-time) |
+| Marketing (campus flyers, incentives) | ~₹100 |
+| **Total one-time** | **~₹236 + tax** |
 
 ### 20.3 Revenue Model (optional, not for MVP)
 

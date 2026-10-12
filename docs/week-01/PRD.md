@@ -26,7 +26,7 @@ Trust is engineered through four pillars:
 
 ## 2. Problem Statement
 
-Students routinely buy items used rarely or once ($20–$120 per purchase). Informal borrowing among friends has no accountability: no condition record at hand-off, no agreed terms, no recourse for damage or loss. Generic marketplaces lack institutional identity verification, deposit escrow, photo evidence, and an embedded dispute process.
+Students routinely buy items used rarely or once (₹20–₹120 per purchase). Informal borrowing among friends has no accountability: no condition record at hand-off, no agreed terms, no recourse for damage or loss. Generic marketplaces lack institutional identity verification, deposit escrow, photo evidence, and an embedded dispute process.
 
 **Value proposition:** cut spending on occasional-use items while making peer borrowing safer and evidence-based than any open marketplace.
 

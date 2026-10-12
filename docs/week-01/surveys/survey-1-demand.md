@@ -24,7 +24,7 @@
 
 **A3.** Living situation: `On-campus housing` `Off-campus, ≤15 min from campus` `Off-campus, >15 min` 
 
-**A4.** Monthly discretionary budget: `< $25` `$25–75` `$75–150` `> $150` `Prefer not to say`
+**A4.** Monthly discretionary budget: `< ₹25` `₹25–75` `₹75–150` `> ₹150` `Prefer not to say`
 
 ## Section B — Current Behavior
 

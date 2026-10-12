@@ -364,7 +364,7 @@ CampusShare's visual identity is built on **trust, community, and verification**
 │ Chemistry Lab Coat (Size M) │
 │ 📍 North Campus             │
 │ ─────────────────────────── │
-│ $3/day          Deposit $10 │
+│ ₹3/day          Deposit ₹10 │
 └─────────────────────────────┘
 ```
 

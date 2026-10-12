@@ -19,7 +19,7 @@
 ## Section A — Current Spending Habits
 
 **A1.** In the past 12 months, approximately how much have you spent on items you later used only a few times? *(select one)*
-- `$0` `$1–25` `$26–50` `$51–100` `$101–200` `$200+` `Prefer not to say`
+- `₹0` `₹1–25` `₹26–50` `₹51–100` `₹101–200` `₹200+` `Prefer not to say`
 
 **A2.** If you could have rented those items instead of buying, how much would you have been willing to pay per day? *(open text, optional)*
 
@@ -27,12 +27,12 @@
 
 *For each item category: "What is the MAXIMUM you would pay per day to rent this item from a verified fellow student?"*
 
-| Item category | Examples | $/day options |
+| Item category | Examples | ₹/day options |
 |---|---|---|
-| Academic | Lab coat, TI-84 calculator, textbooks, drafting tools | `$1` `$2` `$3` `$4` `$5` `$6+` `Wouldn't rent` |
-| Clothing | Blazer, graduation outfit, formal dress/suit | `$2` `$4` `$6` `$8` `$10` `$12+` `Wouldn't rent` |
-| Electronics | Projector, camera, tripod, portable charger | `$3` `$5` `$8` `$10` `$15` `$20+` `Wouldn't rent` |
-| Fitness | Dumbbells, yoga mat, camping gear, sports equipment | `$1` `$2` `$3` `$4` `$5` `$6+` `Wouldn't rent` |
+| Academic | Lab coat, TI-84 calculator, textbooks, drafting tools | `₹1` `₹2` `₹3` `₹4` `₹5` `₹6+` `Wouldn't rent` |
+| Clothing | Blazer, graduation outfit, formal dress/suit | `₹2` `₹4` `₹6` `₹8` `₹10` `₹12+` `Wouldn't rent` |
+| Electronics | Projector, camera, tripod, portable charger | `₹3` `₹5` `₹8` `₹10` `₹15` `₹20+` `Wouldn't rent` |
+| Fitness | Dumbbells, yoga mat, camping gear, sports equipment | `₹1` `₹2` `₹3` `₹4` `₹5` `₹6+` `Wouldn't rent` |
 
 **B1.** *(grid as above — 4 rows, one selection per row)*
 
@@ -42,11 +42,11 @@
 
 ## Section C — Deposit Tolerance
 
-**C1.** For a rental item valued at $50, what is the maximum deposit you would be comfortable with? *(select one)*
-- `$5` `$10` `$15` `$20` `$25` `$30` `$40` `$50` `I wouldn't pay any deposit`
+**C1.** For a rental item valued at ₹50, what is the maximum deposit you would be comfortable with? *(select one)*
+- `₹5` `₹10` `₹15` `₹20` `₹25` `₹30` `₹40` `₹50` `I wouldn't pay any deposit`
 
-**C2.** For a rental item valued at $100, what is the maximum deposit you would be comfortable with? *(select one)*
-- `$10` `$20` `$30` `$40` `$50` `$60` `$75` `$100` `I wouldn't pay any deposit`
+**C2.** For a rental item valued at ₹100, what is the maximum deposit you would be comfortable with? *(select one)*
+- `₹10` `₹20` `₹30` `₹40` `₹50` `₹60` `₹75` `₹100` `I wouldn't pay any deposit`
 
 **C3.** If deposits were returned within 48 hours of item return, how would that affect your willingness to pay a higher deposit? *(select one)*
 - `I'd be comfortable with a higher deposit` `No change` `I'd still prefer a lower deposit` `Not sure`
@@ -88,7 +88,7 @@
 2. **Deposit ceiling:** Use C1/C2 to set maximum deposit fields and suggest replacement-value ratios.
 3. **Service fee viability:** If D1 majority prefers "per day + small fee," model 5–10% commission (§20.3).
 4. **Segment cuts:** Faculty/school (from Survey 1 linkage) vs. price sensitivity — may reveal category-specific pricing opportunities.
-5. **Gate:** If median WTP across all categories < $2/day, revisit pricing model before Week 4 design freeze.
+5. **Gate:** If median WTP across all categories < ₹2/day, revisit pricing model before Week 4 design freeze.
 6. **Feed into:** Database schema defaults (W3 DB draft), API pricing fields (W3 API draft), and PROJECT_PLAN §14 payment flow refinements.
 
 *Distribution channels: same as Survey 1 (`docs/week-01/distribution-plan.md`). Prioritize respondents who opted into follow-up.*

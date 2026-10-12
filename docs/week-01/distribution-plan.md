@@ -24,7 +24,7 @@
 **Borrower-profile (3–4):**
 - Send targeted email to 2nd/3rd-year students who replied Yes to Survey B1 and gave contact.
 - Supplement with direct outreach to known student organization members.
-- Offer $15 coffee voucher for their time.
+- Offer ₹15 coffee voucher for their time.
 
 **Lender-profile (3–4):**
 - Post in campus buy-sell/trade groups asking "Do you own [calculator/suit/camera] you rarely use?"

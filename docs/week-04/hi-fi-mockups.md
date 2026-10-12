@@ -280,7 +280,7 @@
 │ 📍 North Campus                 │
 │                                 │
 │ [Price Row]                     │
-│ $3/day          Deposit $10     │
+│ ₹3/day          Deposit ₹10     │
 │                                 │
 │ [Lender Info]                   │
 │ [Avatar] John D. 🛡️ Verified   │
@@ -315,18 +315,18 @@
 ├─────────────────────────────────┤
 │ [Item Summary]                  │
 │ [Image] Chemistry Lab Coat      │
-│ $3/day × 3 days = $9           │
-│ Deposit: $10                    │
+│ ₹3/day × 3 days = ₹9           │
+│ Deposit: ₹10                    │
 ├─────────────────────────────────┤
 │ [Date Selection]                │
 │ Start: [Date Picker]           │
 │ End:   [Date Picker]           │
 ├─────────────────────────────────┤
 │ [Price Breakdown]               │
-│ Rental fee:    $9.00            │
-│ Deposit:      $10.00            │
+│ Rental fee:    ₹9.00            │
+│ Deposit:      ₹10.00            │
 │ ────────────────────            │
-│ Total:        $19.00            │
+│ Total:        ₹19.00            │
 ├─────────────────────────────────┤
 │ [Payment Method]                │
 │ 💳 Visa •••• 4242              │
@@ -336,7 +336,7 @@
 │ ☑ I agree to rental terms       │
 ├─────────────────────────────────┤
 │ [Secure Payment] 🔒             │
-│ [Pay $19.00]                    │
+│ [Pay ₹19.00]                    │
 └─────────────────────────────────┘
 ```
 
