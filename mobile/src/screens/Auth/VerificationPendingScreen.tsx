@@ -70,7 +70,7 @@ export const VerificationPendingScreen: React.FC<VerificationPendingScreenProps>
       <View style={styles.actions}>
         <Button
           title="Browse Items"
-          onPress={() => navigation.navigate('HomeTabs')}
+          onPress={() => navigation.navigate('Main')}
           variant="primary"
           size="large"
         />

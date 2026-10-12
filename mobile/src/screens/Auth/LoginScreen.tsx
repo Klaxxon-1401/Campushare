@@ -26,7 +26,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     setLoading(true);
     try {
       // TODO: Implement login logic (never log credentials)
-      navigation.navigate('HomeTabs');
+      navigation.navigate('Main');
     } catch (error) {
       console.error('Login failed:', error);
     } finally {

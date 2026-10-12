@@ -4,8 +4,14 @@ import { BookingController } from '../controllers/bookings';
 const router = express.Router();
 const bookingController = new BookingController();
 
+// GET /bookings
+router.get('/', bookingController.listBookings);
+
 // POST /bookings
 router.post('/', bookingController.createBooking);
+
+// GET /bookings/:id
+router.get('/:id', bookingController.getBooking);
 
 // PATCH /bookings/:id/accept
 router.patch('/:id/accept', bookingController.acceptBooking);
