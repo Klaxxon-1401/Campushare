@@ -1,9 +1,15 @@
 # CampusShare — Progress Tracker
 
-_Last updated: 2026-10-12 · Status: feature-complete through Week 12, Android release APK built_
+_Last updated: 2026-10-12 (end of session) · Status: feature-complete through Week 12; release APK rebuilt with notifications, admin dashboard, and ₹30/day minimum pricing_
 
 Single source of truth for what has been built, what is verified, and what remains.
 Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
+
+> **Where we left off (2026-10-12):** every Week 6–12 feature is built, tested, and shipped in a
+> freshly rebuilt APK. Tonight added **in-app notifications**, an **admin dashboard**, the full
+> **Week 10–12 documentation package**, and **realistic rupee pricing (₹30/day minimum)**.
+> The only remaining plan item is a live 20–30 student beta/UAT (§11 / `docs/week-10/UAT_REPORT.md`).
+> All work is committed locally (HEAD `8e781d6`); **nothing has been pushed** (no remote).
 
 ---
 
@@ -16,12 +22,13 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 | Screens | 24 across 14 feature folders |
 | Mobile source | 54 TS/TSX files under `mobile/src` |
 | API | Express + TypeScript, 11 files, in-memory store |
-| Mobile unit tests | 16 / 16 passing |
+| Mobile unit tests | 17 / 17 passing |
 | API smoke tests | 19 / 19 passing |
 | TypeScript | Clean (`tsc --noEmit`) |
 | Android JS bundle | Builds (Hermes) |
-| Android APK | Built and verified — `com.campusshare.app` v1.0.0 |
+| Android APK | Rebuilt 2026-10-12 — `com.campusshare.app` v1.0.0, verified |
 | Currency | Rupees (INR, `₹`) app-wide |
+| Listing pricing | **₹30/day minimum** (seeded ₹30–₹250); enforced in create/edit |
 | Emojis in UI | None — Feather icon set only |
 | Auth / real backend | Not yet (post-course phase) |
 
@@ -41,6 +48,7 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 | `c3395b7` | Notifications & admin dashboard; finish Week 10–12 docs (user guide, UAT, security review, presentation) |
 | `0838b6e` | Update `PROGRESS.md` commit log + known limitations |
 | `02a8f18` | Realistic rupee prices; enforce ₹30/day minimum |
+| `8e781d6` | Update PROGRESS commit log |
 
 ---
 
@@ -75,7 +83,7 @@ CampusRental/
 - Real authentication (JWT / campus-email verification) is the post-course task.
 
 ### 4.2 Listings & discovery
-- Home feed with category chips, campus-verified banner, header message badge.
+- Home feed with category chips, campus-verified banner, and header badges for messages + notifications.
 - Search + filters (`SearchResultsScreen`), item detail with availability calendar.
 - 3-step **Create Listing** wizard (details → pricing/deposit → photos) + **My Listings**
   manage screen (publish / delete drafts, edit).
@@ -101,7 +109,7 @@ State machine (`src/types`): `requested → accepted → paid → active → ret
 
 ### 4.6 Messaging
 - Per-booking threads (`ensureConversation`), chat screen with bubbles, unread badges on
-  Home + Profile. Conversations are created on demand when you open a thread.
+  Home + Profile. The demo bookings ship with seeded threads; new bookings create one on demand.
 
 ### 4.7 Reviews & disputes
 - Reviews: 1–5 stars + comment, only after `returned`, one review per party per booking;
@@ -177,12 +185,13 @@ Notifications: Notifications · Admin: Admin · Profile: Profile
 | Gate | Command | Result |
 |------|---------|--------|
 | Mobile types | `cd mobile && npx tsc --noEmit` | Clean |
-| Mobile unit tests | `cd mobile && node scripts/unit-test.mjs` | 16 / 16 |
+| Mobile unit tests | `cd mobile && node scripts/unit-test.mjs` | 17 / 17 |
 | Android bundle | `cd mobile && npx expo export --platform android` | Builds (Hermes) |
 | API smoke | `cd api && npm run smoke` | 19 / 19 |
 
 Unit tests cover date math (`daysInclusive`, `eachDay`, `overlaps`, `addDays`, `todayISO`,
-`timeAgo`), pricing (`computePrice`), and formatting (`formatMoney` → `₹`, `initials`).
+`timeAgo`), pricing (`computePrice`, the **₹30/day floor**), and formatting (`formatMoney` → `₹`,
+`initials`).
 API smoke covers items/search/pagination, availability, the full booking lifecycle,
 409 double-booking, illegal transitions, past-date rejection, and validation.
 
@@ -201,6 +210,7 @@ Acceptance testing and the security pass are documented in
   - `CampusShare` v1.0.0, package `com.campusshare.app`, target SDK 36
   - Launchable `com.campusshare.app.MainActivity`, signed with the **debug keystore**
     (fine for sideloading; Play-store signing goes through EAS).
+  - Last rebuilt **2026-10-12** with in-app notifications, the admin dashboard, and ₹30/day pricing.
 - **EAS profiles** (`mobile/eas.json`): `development`, `preview` (APK),
   `production` (AAB, remote versioning).
 
@@ -255,6 +265,9 @@ unset ANDROID_SDK_ROOT
 4. Upload condition photos to Firebase Storage (model already in place).
 5. Push notifications for chat and booking updates (the in-app **notification feed** is already
    built client-side; the push transport is the remaining piece).
+6. Sync the API seed data + price validation with the ₹30/day floor (the backend was intentionally
+   left untouched this session — the app enforces the floor, the API does not yet).
+7. Live 20–30 student beta + UAT metrics (script ready in `docs/week-10/UAT_REPORT.md`).
 
 ---
 
