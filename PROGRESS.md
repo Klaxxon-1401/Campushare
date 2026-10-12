@@ -39,6 +39,8 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 | `39a876b` | Switch currency from dollars to rupees (INR) |
 | `2578699` | Add `PROGRESS.md` — comprehensive project status tracker |
 | `c3395b7` | Notifications & admin dashboard; finish Week 10–12 docs (user guide, UAT, security review, presentation) |
+| `0838b6e` | Update `PROGRESS.md` commit log + known limitations |
+| `02a8f18` | Realistic rupee prices; enforce ₹30/day minimum |
 
 ---
 
