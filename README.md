@@ -3,6 +3,8 @@
 A peer-to-peer **campus equipment rental** platform for students and faculty — same-university
 lending with verified identity, photo-backed condition evidence, and money-safe deposits.
 
+> **Project status:** see [`PROGRESS.md`](./PROGRESS.md) for what is built, verified, and pending.
+
 - **Mobile app** — Expo/React Native (Android via Expo/EAS), in `mobile/`
 - **API** — Express + TypeScript (in-memory today, Firestore next), in `api/`
 - **Docs** — weekly trackers, API contract, project plan in `docs/` + `PROJECT_PLAN.md`

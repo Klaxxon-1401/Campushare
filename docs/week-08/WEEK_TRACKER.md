@@ -17,8 +17,8 @@
 - Conversations are **scoped to a booking** — no random-user DMs, which keeps lending safer
   on a campus platform.
 - Unread counts are per-conversation per-member and badge-visible on Home and Profile.
-- Seed data includes threads for the active TI-84 rental and the completed drafting-kit rental,
-  so the tab demos immediately.
+- Conversations are created on demand: open a booking and tap **Message** (or the chat entry
+  point) to start the thread, so the Messages tab starts empty and fills as you interact.
 
 ## Real-backend mapping
 
