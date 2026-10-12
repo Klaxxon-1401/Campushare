@@ -37,6 +37,8 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 | `a0e86c0` | Release — production-ready Android APK built locally |
 | `1664baf` | Remove all emojis from the app; use Feather icons |
 | `39a876b` | Switch currency from dollars to rupees (INR) |
+| `2578699` | Add `PROGRESS.md` — comprehensive project status tracker |
+| `c3395b7` | Notifications & admin dashboard; finish Week 10–12 docs (user guide, UAT, security review, presentation) |
 
 ---
 
@@ -236,6 +238,8 @@ unset ANDROID_SDK_ROOT
 4. **Camera on emulator** — `expo-image-picker` needs a device/emulator camera; falls back to
    the photo library.
 5. **APK signing** — debug keystore; use EAS for a distributable release build.
+6. **Admin console is a demo** — verification/dispute actions are client-side and session-only;
+   server-side role enforcement lands with the auth milestone.
 
 ---
 
