@@ -26,6 +26,9 @@ export type RootStackParamList = {
   Disputes: undefined;
   Conversations: undefined;
   Chat: { conversationId: string };
+  // Week 8+: notifications feed & admin console
+  Notifications: undefined;
+  Admin: undefined;
 };
 
 export type MainTabParamList = {

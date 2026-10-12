@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { colors, typography, spacing, borders } from '../../theme';
@@ -24,16 +25,22 @@ export const HomeFeedScreen: React.FC<TabScreenProps<'Home'>> = ({ navigation })
   const [category, setCategory] = useState<ItemCategory | 'all'>('all');
   const [search] = useState('');
   const [unread, setUnread] = useState(0);
+  const [notifUnread, setNotifUnread] = useState(0);
 
-  useEffect(() => {
-    let mounted = true;
-    api.unreadCount(CURRENT_USER.id).then((n) => {
-      if (mounted) setUnread(n);
-    });
-    return () => {
-      mounted = false;
-    };
+  const refreshBadges = useCallback(async () => {
+    const [msgs, notes] = await Promise.all([
+      api.unreadCount(CURRENT_USER.id),
+      api.unreadNotificationCount(CURRENT_USER.id),
+    ]);
+    setUnread(msgs);
+    setNotifUnread(notes);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshBadges();
+    }, [refreshBadges])
+  );
 
   const { items, loading, refreshing, refresh } = useItems({ category, q: search });
 
@@ -56,6 +63,17 @@ export const HomeFeedScreen: React.FC<TabScreenProps<'Home'>> = ({ navigation })
             {unread > 0 && (
               <View style={styles.unreadBadge}>
                 <Text style={styles.unreadText}>{unread > 9 ? '9+' : unread}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('Notifications')}
+          >
+            <Feather name="bell" size={22} color={colors.neutral.textPrimary} />
+            {notifUnread > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadText}>{notifUnread > 9 ? '9+' : notifUnread}</Text>
               </View>
             )}
           </TouchableOpacity>

@@ -43,7 +43,23 @@ const users: User[] = [
     id: 'u_priya', name: 'Priya S.', campusEmail: 'priya.s@student.university.edu',
     verificationStatus: 'verified', role: 'student', rating: 4.8, reviewCount: 11,
   },
+  // Pending verifications surface in the admin verification queue (PROJECT_PLAN §12.1).
+  {
+    id: 'u_nikhil', name: 'Nikhil Verma', campusEmail: 'nikhil.v@student.university.edu',
+    studentId: '23EC1187', verificationStatus: 'pending', role: 'student', rating: 0, reviewCount: 0,
+  },
+  {
+    id: 'u_meera', name: 'Meera Iyer', campusEmail: 'meera.i@student.university.edu',
+    studentId: '24ME2043', verificationStatus: 'pending', role: 'student', rating: 0, reviewCount: 0,
+  },
+  // Campus administrator persona (PROJECT_PLAN §5.3).
+  {
+    id: 'u_admin', name: 'Dr. Chen', campusEmail: 'chen@university.edu',
+    verificationStatus: 'verified', role: 'admin', rating: 0, reviewCount: 0,
+  },
 ];
+
+export const USERS: User[] = users;
 
 export const USER_BY_ID: Record<string, User> = Object.fromEntries(
   users.map((u) => [u.id, u])

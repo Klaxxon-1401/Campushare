@@ -209,3 +209,30 @@ export interface HandoverStatus {
   depositAmount: number;
   depositRefunded: boolean;
 }
+
+// ---- Notifications (PROJECT_PLAN §11.8) -------------------------------------
+
+export type NotificationKind =
+  | 'booking-requested'
+  | 'request-decision'
+  | 'payment'
+  | 'pickup-pending'
+  | 'return-pending'
+  | 'return-confirmation'
+  | 'deposit-refunded'
+  | 'dispute-update'
+  | 'message'
+  | 'review-received';
+
+export interface AppNotification {
+  id: string;
+  /** Recipient. */
+  userId: string;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  /** Deep-link target for the relevant booking, when applicable. */
+  bookingId?: string;
+  read: boolean;
+  createdAt: string;
+}

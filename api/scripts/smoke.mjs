@@ -22,10 +22,10 @@ let failed = 0;
 const check = (name, cond, extra = '') => {
   if (cond) {
     passed += 1;
-    console.log(`  ✔ ${name}${extra ? ` — ${extra}` : ''}`);
+    console.log(`  PASS  ${name}${extra ? ` — ${extra}` : ''}`);
   } else {
     failed += 1;
-    console.error(`  ✘ ${name}${extra ? ` — ${extra}` : ''}`);
+    console.error(`  FAIL  ${name}${extra ? ` — ${extra}` : ''}`);
   }
 };
 

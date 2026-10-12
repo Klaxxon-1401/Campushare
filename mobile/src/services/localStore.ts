@@ -1,4 +1,5 @@
 import {
+  AppNotification,
   AvailabilityDay,
   Booking,
   Conversation,
@@ -10,13 +11,17 @@ import {
   ItemQuery,
   ItemStatus,
   Message,
+  NotificationKind,
   Payment,
   PaymentMethod,
   Review,
+  User,
+  VerificationStatus,
 } from '../types';
 import { addDays, eachDay, overlaps, todayISO } from '../utils/date';
+import { formatMoney } from '../utils/format';
 import { computePrice } from '../utils/pricing';
-import { CURRENT_USER, seedBookings, seedItemsResolved, USER_BY_ID } from './seed';
+import { CURRENT_USER, seedBookings, seedItemsResolved, USER_BY_ID, USERS } from './seed';
 
 /**
  * In-memory data store used while the Firestore-backed API is being built.
@@ -55,9 +60,36 @@ let reviews: Review[] = [];
 let disputes: Dispute[] = [];
 let conversations: Conversation[] = [];
 let messages: Message[] = [];
+/** In-app notification feed (PROJECT_PLAN §11.8). */
+let notifications: AppNotification[] = [];
+/** Admin-only, in-session verification decisions (demo; real backend pending). */
+const userVerification = new Map<string, VerificationStatus>();
 
 let idCounter = 2000;
 const nextId = (prefix: string): string => `${prefix}_${(idCounter++).toString(36)}${Date.now().toString(36).slice(-3)}`;
+
+/** Appends an in-app notification for a recipient (PROJECT_PLAN §11.8). */
+const notify = (
+  userId: string,
+  kind: NotificationKind,
+  title: string,
+  body: string,
+  bookingId?: string
+): void => {
+  notifications = [
+    {
+      id: nextId('ntf'),
+      userId,
+      kind,
+      title,
+      body,
+      bookingId,
+      read: false,
+      createdAt: new Date().toISOString(),
+    },
+    ...notifications,
+  ];
+};
 
 // Seed Week 7–9 state so payment / evidence / review / chat flows demo out of
 // the box. All timestamps are relative to app start, so they never go stale.
@@ -120,6 +152,16 @@ const nextId = (prefix: string): string => `${prefix}_${(idCounter++).toString(3
     { id: 'msg_1090_2', conversationId: 'conv_bk_1090', senderId: CURRENT_USER.id, text: 'Great, thanks! Returning it Friday.', sentAt: now },
     { id: 'msg_1002_1', conversationId: 'conv_bk_1002', senderId: ti84.ownerId, text: 'Got it — the calculator is charged. Meet me at the Central Library desk?', sentAt: now }
   );
+
+  // Seed the in-app notification feed so the bell has real content on launch.
+  notify(CURRENT_USER.id, 'payment', 'Payment confirmed',
+    `${formatMoney(historical.total)} paid for ${drafting.title}.`, 'bk_1090');
+  notify(CURRENT_USER.id, 'return-confirmation', 'Return confirmed',
+    `${drafting.title} was returned and confirmed.`, 'bk_1090');
+  notify(CURRENT_USER.id, 'deposit-refunded', 'Deposit refunded',
+    `${formatMoney(historical.deposit)} deposit refunded for ${drafting.title}.`, 'bk_1090');
+  notify(CURRENT_USER.id, 'message', `New message from ${ti84.ownerName}`,
+    'Meet me at the Central Library desk?', 'bk_1002');
 })();
 
 const delay = <T>(value: T, ms = 220): Promise<T> =>
@@ -297,6 +339,13 @@ export const localStore = {
       createdAt: now,
     };
     bookings = [booking, ...bookings];
+    notify(
+      booking.lenderId,
+      'booking-requested',
+      'New booking request',
+      `${booking.borrowerName} requested ${booking.itemTitle} (${booking.startDate} → ${booking.endDate}).`,
+      booking.id
+    );
     return delay(booking, 400);
   },
 
@@ -320,6 +369,23 @@ export const localStore = {
     if (idx === -1) return Promise.reject(new ApiError('NOT_FOUND', 'Booking not found', 404));
     const updated: Booking = { ...bookings[idx], status };
     bookings = [...bookings.slice(0, idx), updated, ...bookings.slice(idx + 1)];
+    if (status === 'accepted') {
+      notify(
+        updated.borrowerId,
+        'request-decision',
+        'Request accepted',
+        `${updated.lenderName} accepted your request for ${updated.itemTitle}. Pay to confirm.`,
+        updated.id
+      );
+    } else if (status === 'declined') {
+      notify(
+        updated.borrowerId,
+        'request-decision',
+        'Request declined',
+        `${updated.lenderName} declined your request for ${updated.itemTitle}.`,
+        updated.id
+      );
+    }
     return delay(updated);
   },
 
@@ -357,6 +423,20 @@ export const localStore = {
     const bookingIdx = bookings.findIndex((b) => b.id === bookingId);
     const paid: Booking = { ...bookings[bookingIdx], status: 'paid' };
     bookings = [...bookings.slice(0, bookingIdx), paid, ...bookings.slice(bookingIdx + 1)];
+    notify(
+      paid.lenderId,
+      'payment',
+      'Payment received',
+      `${paid.borrowerName} paid ${formatMoney(paid.total)} for ${paid.itemTitle}.`,
+      paid.id
+    );
+    notify(
+      paid.borrowerId,
+      'pickup-pending',
+      'Pickup reminder',
+      `Collect ${paid.itemTitle} on ${paid.startDate}.`,
+      paid.id
+    );
     return delay({ payment, booking: paid }, 900);
   },
 
@@ -381,6 +461,13 @@ export const localStore = {
       createdAt: new Date().toISOString(),
     };
     payments = [refund, ...payments];
+    notify(
+      booking.borrowerId,
+      'deposit-refunded',
+      'Deposit refunded',
+      `${formatMoney(refund.amount)} deposit refunded for ${booking.itemTitle}.`,
+      bookingId
+    );
     return delay(refund, 600);
   },
 
@@ -461,6 +548,13 @@ export const localStore = {
       pickupConfirmedAt: new Date().toISOString(),
     };
     bookings = [...bookings.slice(0, idx), updated, ...bookings.slice(idx + 1)];
+    notify(
+      updated.borrowerId,
+      'return-pending',
+      'Return reminder',
+      `${updated.itemTitle} is due back by ${updated.endDate}. Capture after-photos before returning.`,
+      updated.id
+    );
     return delay(updated, 400);
   },
 
@@ -481,6 +575,13 @@ export const localStore = {
       returnConfirmedAt: new Date().toISOString(),
     };
     bookings = [...bookings.slice(0, idx), updated, ...bookings.slice(idx + 1)];
+    notify(
+      updated.lenderId,
+      'return-confirmation',
+      'Return confirmation needed',
+      `${updated.borrowerName} returned ${updated.itemTitle}. Confirm to release the deposit.`,
+      updated.id
+    );
     return delay(updated, 400);
   },
 
@@ -513,6 +614,13 @@ export const localStore = {
       createdAt: new Date().toISOString(),
     };
     reviews = [review, ...reviews];
+    notify(
+      toUserId,
+      'review-received',
+      'New review',
+      `${CURRENT_USER.name} rated your ${booking.itemTitle} rental ${review.rating}/5.`,
+      bookingId
+    );
     return delay(review, 300);
   },
 
@@ -550,6 +658,15 @@ export const localStore = {
       createdAt: new Date().toISOString(),
     };
     disputes = [dispute, ...disputes];
+    const counterParty =
+      booking.lenderId === CURRENT_USER.id ? booking.borrowerId : booking.lenderId;
+    notify(
+      counterParty,
+      'dispute-update',
+      'Dispute opened',
+      `A dispute was opened for ${booking.itemTitle}. Our team will review it.`,
+      bookingId
+    );
     return delay(dispute, 300);
   },
 
@@ -566,6 +683,13 @@ export const localStore = {
       resolvedAt: new Date().toISOString(),
     };
     disputes = [...disputes.slice(0, idx), resolved, ...disputes.slice(idx + 1)];
+    notify(
+      resolved.filedBy,
+      'dispute-update',
+      'Dispute resolved',
+      `Your dispute for ${resolved.itemTitle} was resolved.`,
+      resolved.bookingId
+    );
     return delay(resolved, 300);
   },
 
@@ -630,6 +754,16 @@ export const localStore = {
         ...(other ? { [other]: (conversations[idx].unreadBy[other] ?? 0) + 1 } : {}),
       },
     };
+    if (other) {
+      const senderName = conv.memberNames[senderId] ?? 'Someone';
+      notify(
+        other,
+        'message',
+        `New message from ${senderName}`,
+        message.text.length > 80 ? `${message.text.slice(0, 77)}…` : message.text,
+        conv.bookingId
+      );
+    }
     return delay(message, 200);
   },
 
@@ -640,6 +774,90 @@ export const localStore = {
         0
       )
     ),
+
+  // ---- notifications (PROJECT_PLAN §11.8) ----------------------------------
+
+  listNotifications: (userId: string = CURRENT_USER.id): Promise<AppNotification[]> =>
+    delay(
+      notifications
+        .filter((n) => n.userId === userId)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    ),
+
+  unreadNotificationCount: (userId: string = CURRENT_USER.id): Promise<number> =>
+    delay(notifications.filter((n) => n.userId === userId && !n.read).length),
+
+  markNotificationRead: (notificationId: string): Promise<void> => {
+    notifications = notifications.map((n) =>
+      n.id === notificationId ? { ...n, read: true } : n
+    );
+    return delay(undefined);
+  },
+
+  markAllNotificationsRead: (userId: string = CURRENT_USER.id): Promise<void> => {
+    notifications = notifications.map((n) => (n.userId === userId ? { ...n, read: true } : n));
+    return delay(undefined);
+  },
+
+  // ---- admin / moderation (client-side demo; no roles/auth yet) -------------
+
+  listUsers: (): Promise<User[]> =>
+    delay(
+      USERS.map((u) => ({
+        ...u,
+        verificationStatus: userVerification.get(u.id) ?? u.verificationStatus,
+      }))
+    ),
+
+  setUserVerification: (userId: string, status: VerificationStatus): Promise<User> => {
+    const base = USERS.find((u) => u.id === userId);
+    if (!base) return Promise.reject(new ApiError('NOT_FOUND', 'User not found', 404));
+    userVerification.set(userId, status);
+    return delay({ ...base, verificationStatus: status }, 250);
+  },
+
+  getAnalytics: (): Promise<{
+    items: { total: number; published: number; draft: number; inactive: number };
+    bookings: Record<Booking['status'], number>;
+    users: { total: number; pending: number; verified: number };
+    revenue: number;
+    depositsHeld: number;
+    openDisputes: number;
+  }> => {
+    const bookingCounts = bookings.reduce<Record<Booking['status'], number>>(
+      (acc, b) => {
+        acc[b.status] = (acc[b.status] ?? 0) + 1;
+        return acc;
+      },
+      {} as Record<Booking['status'], number>
+    );
+    const statusOf = (u: User): VerificationStatus =>
+      userVerification.get(u.id) ?? u.verificationStatus;
+    const revenue = payments
+      .filter((p) => p.type === 'rental' && p.status === 'succeeded')
+      .reduce((sum, p) => sum + p.amount, 0);
+    const depositsHeld = bookings
+      .filter((b) => ['paid', 'active'].includes(b.status))
+      .filter((b) => !payments.some((p) => p.bookingId === b.id && p.type === 'refund'))
+      .reduce((sum, b) => sum + b.deposit, 0);
+    return delay({
+      items: {
+        total: items.length,
+        published: items.filter((i) => i.status === 'published').length,
+        draft: items.filter((i) => i.status === 'draft').length,
+        inactive: items.filter((i) => i.status === 'inactive').length,
+      },
+      bookings: bookingCounts,
+      users: {
+        total: USERS.length,
+        pending: USERS.filter((u) => statusOf(u) === 'pending').length,
+        verified: USERS.filter((u) => statusOf(u) === 'verified').length,
+      },
+      revenue,
+      depositsHeld,
+      openDisputes: disputes.filter((d) => d.status !== 'resolved').length,
+    });
+  },
 };
 
 export type LocalStore = typeof localStore;
@@ -655,5 +873,7 @@ export const __resetStore = (): void => {
   disputes = [];
   conversations = [];
   messages = [];
+  notifications = [];
+  userVerification.clear();
   idCounter = 2000;
 };

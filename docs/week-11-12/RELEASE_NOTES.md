@@ -43,12 +43,16 @@ cd android && ./gradlew assembleRelease           # needs Android SDK + JDK 17
 
 - [x] Week 6–9 feature scope complete (listings, search, availability, booking, payments,
       photo evidence, chat, reviews, disputes)
-- [x] Typecheck + 13 mobile unit tests + 19 API smoke tests green
+- [x] Week 8 cross-cutting: **in-app notifications** (§11.8) + **admin dashboard** (verification,
+      disputes, analytics) — client-side, no backend changes
+- [x] Typecheck + 16 mobile unit tests + 19 API smoke tests green
 - [x] Android JS bundle builds (Hermes)
 - [x] `eas.json` profiles configured
 - [x] **APK produced locally** — `mobile/android/app/build/outputs/apk/release/app-release.apk`
       (77 MB, `com.campusshare.app` v1.0.0, signed with the debug keystore, verified with aapt2/apksigner)
-- [ ] Demo walkthrough script from Week-6 seed data (see `docs/week-07/WEEK_TRACKER.md`)
+- [x] Demo walkthrough script from seed data — `docs/week-11-12/PRESENTATION.md`
+- [x] User guide — `docs/week-11-12/USER_GUIDE.md`
+- [ ] Live 20–30 student beta cohort + UAT metrics (script in `docs/week-10/UAT_REPORT.md`)
 - [ ] Firestore + JWT integration (post-course deployment phase)
 
 ## Post-course deployment roadmap (PROJECT_PLAN §9/§21)
@@ -57,4 +61,6 @@ cd android && ./gradlew assembleRelease           # needs Android SDK + JDK 17
 2. Firestore backend replacing `localStore`/in-memory API (contracts already in docs).
 3. Stripe Connect for real payments + deposit holds.
 4. Condition-photo upload to Firebase Storage with the existing evidence model.
-5. Push notification bridge for chat + booking updates.
+5. Push notification bridge for chat + booking updates (in-app notification feed already built
+   client-side — see `mobile/src/services/localStore.ts` and the Notifications screen).
+6. Server-side admin authorization for the verification/dispute console.

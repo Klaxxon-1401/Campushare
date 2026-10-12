@@ -54,7 +54,7 @@ See `docs/week-11-12/RELEASE_NOTES.md` for signing, profiles, and the release ch
 ## Quality gates
 
 ```bash
-cd mobile && npm run typecheck && npm test       # 13 unit tests, clean types
+cd mobile && npm run typecheck && npm test       # 16 unit tests, clean types
 cd mobile && npx expo export -p android          # Android Hermes bundle compiles
 cd api && npm run smoke                          # 19 end-to-end asserts
 ```
@@ -64,7 +64,17 @@ cd api && npm run smoke                          # 19 end-to-end asserts
 - **Weeks 1–5** — planning, UX, API contract, scaffold (`docs/week-0X`)
 - **Week 6** — listings, search/filters, availability calendar, booking module
 - **Week 7** — mock payments, deposit hold/release, condition-photo handover
-- **Week 8** — per-booking messaging
+- **Week 8** — per-booking messaging, in-app notifications, admin dashboard
 - **Week 9** — reviews, ratings, disputes
-- **Week 10** — testing & quality report
-- **Weeks 11–12** — Android build config, release notes, deployment roadmap
+- **Week 10** — testing, UAT & security review
+- **Weeks 11–12** — Android build config, release notes, user guide, presentation, deployment roadmap
+
+## Documentation
+
+- [`PROGRESS.md`](./PROGRESS.md) — what's built, verified, and pending
+- [`docs/week-10/TESTING_REPORT.md`](./docs/week-10/TESTING_REPORT.md) — test layers & results
+- [`docs/week-10/UAT_REPORT.md`](./docs/week-10/UAT_REPORT.md) — acceptance testing
+- [`docs/week-10/SECURITY_REVIEW.md`](./docs/week-10/SECURITY_REVIEW.md) — security pass
+- [`docs/week-11-12/RELEASE_NOTES.md`](./docs/week-11-12/RELEASE_NOTES.md) — build & release
+- [`docs/week-11-12/USER_GUIDE.md`](./docs/week-11-12/USER_GUIDE.md) — how to use the app
+- [`docs/week-11-12/PRESENTATION.md`](./docs/week-11-12/PRESENTATION.md) — demo script

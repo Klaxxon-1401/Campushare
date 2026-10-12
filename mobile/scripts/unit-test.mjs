@@ -90,6 +90,22 @@ t('initials from full name', () => {
   assert.equal(fmt.initials('anmol kumar'), 'AK');
 });
 
+// ---- activity timestamps (notifications) -----------------------------------
+const now = new Date(2026, 9, 20, 12, 0, 0);
+const ago = (ms) => new Date(now.getTime() - ms).toISOString();
+
+t('timeAgo: under a minute is "just now"', () => {
+  assert.equal(date.timeAgo(ago(30_000), now), 'just now');
+});
+t('timeAgo: minutes, hours and days', () => {
+  assert.equal(date.timeAgo(ago(5 * 60_000), now), '5m ago');
+  assert.equal(date.timeAgo(ago(3 * 3_600_000), now), '3h ago');
+  assert.equal(date.timeAgo(ago(2 * 86_400_000), now), '2d ago');
+});
+t('timeAgo: a week or more falls back to a short date', () => {
+  assert.equal(date.timeAgo(ago(10 * 86_400_000), now), '10 Oct');
+});
+
 let passed = 0;
 for (const [name, fn] of tests) {
   try {

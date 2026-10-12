@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography, spacing, borders } from '../../theme';
@@ -21,24 +22,35 @@ export const ProfileScreen: React.FC<TabScreenProps<'Profile'>> = ({ navigation 
   const insets = useSafeAreaInsets();
   const user = CURRENT_USER;
   const [unread, setUnread] = useState(0);
+  const [notifUnread, setNotifUnread] = useState(0);
 
-  useEffect(() => {
-    let mounted = true;
-    api.unreadCount(CURRENT_USER.id).then((n) => {
-      if (mounted) setUnread(n);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+      Promise.all([
+        api.unreadCount(CURRENT_USER.id),
+        api.unreadNotificationCount(CURRENT_USER.id),
+      ]).then(([messages, notes]) => {
+        if (mounted) {
+          setUnread(messages);
+          setNotifUnread(notes);
+        }
+      });
+      return () => {
+        mounted = false;
+      };
+    }, [])
+  );
 
   const menu: MenuItem[] = [
+    { icon: 'bell', label: 'Notifications', hint: 'Rental activity', badge: notifUnread, onPress: () => navigation.navigate('Notifications') },
     { icon: 'message-circle', label: 'Messages', hint: 'Chat about rentals', badge: unread, onPress: () => navigation.navigate('Conversations') },
     { icon: 'tag', label: 'My Listings', hint: 'Items you lend out', onPress: () => navigation.navigate('MyListings') },
     { icon: 'package', label: 'My Bookings', hint: 'Borrowing & lending', onPress: () => navigation.navigate('Bookings') },
     { icon: 'camera', label: 'Returns', hint: 'Photo proof & deposits', onPress: () => navigation.navigate('Returns') },
     { icon: 'star', label: 'Reviews', hint: 'Rate and read reviews', onPress: () => navigation.navigate('Reviews', {}) },
     { icon: 'shield', label: 'Disputes', hint: 'Deposit protection cases', onPress: () => navigation.navigate('Disputes') },
+    { icon: 'sliders', label: 'Admin dashboard', hint: 'Verification, disputes & stats', onPress: () => navigation.navigate('Admin') },
     { icon: 'settings', label: 'Settings', hint: 'Account & privacy', onPress: () => Alert.alert('Coming soon', 'Settings will be added in a later milestone.') },
   ];
 
@@ -92,7 +104,7 @@ export const ProfileScreen: React.FC<TabScreenProps<'Profile'>> = ({ navigation 
           <Text style={styles.logoutText}>Log out</Text>
         </TouchableOpacity>
 
-        <Text style={styles.version}>CampusShare · v1.0 · Week 6 build</Text>
+        <Text style={styles.version}>CampusShare · v1.0.0 · Release build</Text>
       </ScrollView>
     </View>
   );

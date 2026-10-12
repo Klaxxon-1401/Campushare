@@ -36,6 +36,9 @@ import { ConversationsScreen } from '../screens/Messages/ConversationsScreen';
 import { ChatScreen } from '../screens/Messages/ChatScreen';
 import { ReviewsScreen } from '../screens/Reviews/ReviewsScreen';
 import { DisputesScreen } from '../screens/Disputes/DisputesScreen';
+// Week 8+ screens
+import { NotificationsScreen } from '../screens/Notifications/NotificationsScreen';
+import { AdminScreen } from '../screens/Admin/AdminScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -133,6 +136,10 @@ export default function AppNavigator() {
         <Stack.Screen name="Chat" component={ChatScreen} />
         <Stack.Screen name="Reviews" component={ReviewsScreen} />
         <Stack.Screen name="Disputes" component={DisputesScreen} />
+
+        {/* Week 8+ screens */}
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="Admin" component={AdminScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
