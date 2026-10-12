@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography, spacing, borders } from '../../theme';
 import { Badge } from '../../components';
+import { api } from '../../services/api';
 import { CURRENT_USER } from '../../services/seed';
 import { TabScreenProps } from '../../navigation/types';
 import { initials } from '../../utils/format';
@@ -12,18 +13,32 @@ interface MenuItem {
   icon: keyof typeof Feather.glyphMap;
   label: string;
   hint?: string;
+  badge?: number;
   onPress: () => void;
 }
 
 export const ProfileScreen: React.FC<TabScreenProps<'Profile'>> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const user = CURRENT_USER;
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    let mounted = true;
+    api.unreadCount(CURRENT_USER.id).then((n) => {
+      if (mounted) setUnread(n);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const menu: MenuItem[] = [
+    { icon: 'message-circle', label: 'Messages', hint: 'Chat about rentals', badge: unread, onPress: () => navigation.navigate('Conversations') },
     { icon: 'tag', label: 'My Listings', hint: 'Items you lend out', onPress: () => navigation.navigate('MyListings') },
     { icon: 'package', label: 'My Bookings', hint: 'Borrowing & lending', onPress: () => navigation.navigate('Bookings') },
     { icon: 'camera', label: 'Returns', hint: 'Photo proof & deposits', onPress: () => navigation.navigate('Returns') },
-    { icon: 'star', label: 'My Reviews', hint: 'Ratings from rentals', onPress: () => Alert.alert('Coming soon', 'Reviews unlock after your first completed rental.') },
+    { icon: 'star', label: 'Reviews', hint: 'Rate and read reviews', onPress: () => navigation.navigate('Reviews', {}) },
+    { icon: 'shield', label: 'Disputes', hint: 'Deposit protection cases', onPress: () => navigation.navigate('Disputes') },
     { icon: 'settings', label: 'Settings', hint: 'Account & privacy', onPress: () => Alert.alert('Coming soon', 'Settings will be added in a later milestone.') },
   ];
 
@@ -62,6 +77,11 @@ export const ProfileScreen: React.FC<TabScreenProps<'Profile'>> = ({ navigation 
                 <Text style={styles.menuLabel}>{item.label}</Text>
                 {item.hint ? <Text style={styles.menuHint}>{item.hint}</Text> : null}
               </View>
+              {item.badge && item.badge > 0 ? (
+                <View style={styles.menuBadge}>
+                  <Text style={styles.menuBadgeText}>{item.badge}</Text>
+                </View>
+              ) : null}
               <Feather name="chevron-right" size={18} color={colors.neutral.textMuted} />
             </TouchableOpacity>
           ))}
@@ -164,6 +184,20 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.small,
     color: colors.neutral.textSecondary,
     marginTop: 2,
+  },
+  menuBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.primary.main,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  menuBadgeText: {
+    fontFamily: typography.fonts.bodyBold,
+    fontSize: typography.sizes.small,
+    color: colors.primary.contrast,
   },
   logout: {
     flexDirection: 'row',

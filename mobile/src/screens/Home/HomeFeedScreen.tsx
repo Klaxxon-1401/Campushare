@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
 import { colors, typography, spacing, borders } from '../../theme';
 import { CategoryChips, EmptyState, ItemCard, SearchBar } from '../../components';
 import { CATEGORY_OPTIONS } from '../../constants/catalog';
 import { useItems } from '../../hooks/useItems';
+import { api } from '../../services/api';
 import { ItemCategory } from '../../types';
 import { TabScreenProps } from '../../navigation/types';
 import { initials } from '../../utils/format';
@@ -21,6 +23,17 @@ export const HomeFeedScreen: React.FC<TabScreenProps<'Home'>> = ({ navigation })
   const insets = useSafeAreaInsets();
   const [category, setCategory] = useState<ItemCategory | 'all'>('all');
   const [search] = useState('');
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    let mounted = true;
+    api.unreadCount(CURRENT_USER.id).then((n) => {
+      if (mounted) setUnread(n);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const { items, loading, refreshing, refresh } = useItems({ category, q: search });
 
@@ -33,12 +46,25 @@ export const HomeFeedScreen: React.FC<TabScreenProps<'Home'>> = ({ navigation })
             <Text style={styles.verified}>🛡️ University Verified Only</Text>
           </View>
         </View>
-        <TouchableOpacity
-          style={styles.avatar}
-          onPress={() => navigation.navigate('Profile')}
-        >
-          <Text style={styles.avatarText}>{initials(CURRENT_USER.name)}</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('Conversations')}
+          >
+            <Feather name="message-circle" size={22} color={colors.neutral.textPrimary} />
+            {unread > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadText}>{unread > 9 ? '9+' : unread}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.avatar}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <Text style={styles.avatarText}>{initials(CURRENT_USER.name)}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.searchWrap}>
@@ -132,6 +158,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: colors.primary.main,
+  },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.neutral.surface,
+    borderWidth: borders.width.thin,
+    borderColor: colors.neutral.border,
+  },
+  unreadBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.state.error,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: colors.neutral.background,
+  },
+  unreadText: {
+    fontFamily: typography.fonts.bodyBold,
+    fontSize: typography.sizes.caption,
+    color: colors.primary.contrast,
   },
   avatarText: {
     fontFamily: typography.fonts.bodyBold,

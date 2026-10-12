@@ -18,6 +18,14 @@ export type RootStackParamList = {
   MyListings: undefined;
   BookingRequest: { itemId: string };
   BookingDetail: { bookingId: string };
+  // Week 7+: payments, handover, trust & messaging
+  Payment: { bookingId: string };
+  PhotoCapture: { bookingId: string; stage: 'before' | 'after' };
+  Handover: { bookingId: string };
+  Reviews: { bookingId?: string } | undefined;
+  Disputes: undefined;
+  Conversations: undefined;
+  Chat: { conversationId: string };
 };
 
 export type MainTabParamList = {

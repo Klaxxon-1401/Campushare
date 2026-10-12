@@ -28,6 +28,14 @@ import { CreateListingScreen } from '../screens/Listing/CreateListingScreen';
 import { MyListingsScreen } from '../screens/Listing/MyListingsScreen';
 import { BookingRequestScreen } from '../screens/Booking/BookingRequestScreen';
 import { BookingDetailScreen } from '../screens/Booking/BookingDetailScreen';
+// Week 7–9 screens
+import { PaymentScreen } from '../screens/Payment/PaymentScreen';
+import { PhotoCaptureScreen } from '../screens/Handover/PhotoCaptureScreen';
+import { HandoverScreen } from '../screens/Handover/HandoverScreen';
+import { ConversationsScreen } from '../screens/Messages/ConversationsScreen';
+import { ChatScreen } from '../screens/Messages/ChatScreen';
+import { ReviewsScreen } from '../screens/Reviews/ReviewsScreen';
+import { DisputesScreen } from '../screens/Disputes/DisputesScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -116,6 +124,15 @@ export default function AppNavigator() {
         <Stack.Screen name="MyListings" component={MyListingsScreen} />
         <Stack.Screen name="BookingRequest" component={BookingRequestScreen} />
         <Stack.Screen name="BookingDetail" component={BookingDetailScreen} />
+
+        {/* Week 7–9 screens */}
+        <Stack.Screen name="Payment" component={PaymentScreen} />
+        <Stack.Screen name="PhotoCapture" component={PhotoCaptureScreen} />
+        <Stack.Screen name="Handover" component={HandoverScreen} />
+        <Stack.Screen name="Conversations" component={ConversationsScreen} />
+        <Stack.Screen name="Chat" component={ChatScreen} />
+        <Stack.Screen name="Reviews" component={ReviewsScreen} />
+        <Stack.Screen name="Disputes" component={DisputesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

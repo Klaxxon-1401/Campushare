@@ -32,6 +32,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "CampusShare uses photos to record item condition before and after each rental.",
+          "cameraPermission": "CampusShare uses your camera to capture condition evidence for rentals."
+        }
+      ]
+    ]
   }
 }

@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { colors, typography, spacing, borders } from '../../theme';
 import { Badge, Button, EmptyState, PriceSummary, ScreenHeader } from '../../components';
 import { api, ApiError } from '../../services/api';
 import { CURRENT_USER } from '../../services/seed';
-import { Booking, BookingStatus } from '../../types';
+import { Booking, BookingStatus, Payment } from '../../types';
 import { StackScreenProps } from '../../navigation/types';
 import { formatLong, formatRange } from '../../utils/date';
 import { formatMoney } from '../../utils/format';
@@ -29,13 +29,19 @@ export const BookingDetailScreen: React.FC<StackScreenProps<'BookingDetail'>> = 
 }) => {
   const { bookingId } = route.params;
   const [booking, setBooking] = useState<Booking | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      setBooking(await api.getBooking(bookingId));
+      const [b, pays] = await Promise.all([
+        api.getBooking(bookingId),
+        api.getPaymentsForBooking(bookingId),
+      ]);
+      setBooking(b);
+      setPayments(pays);
     } catch {
       setBooking(null);
     } finally {
@@ -55,6 +61,15 @@ export const BookingDetailScreen: React.FC<StackScreenProps<'BookingDetail'>> = 
       Alert.alert('Action failed', e instanceof ApiError ? e.message : 'Please try again.');
     } finally {
       setBusy(false);
+    }
+  };
+
+  const openChat = async () => {
+    try {
+      const conv = await api.ensureConversation(bookingId);
+      navigation.navigate('Chat', { conversationId: conv.id });
+    } catch {
+      Alert.alert('Error', 'Could not open the conversation.');
     }
   };
 
@@ -82,6 +97,8 @@ export const BookingDetailScreen: React.FC<StackScreenProps<'BookingDetail'>> = 
   const meta = STATUS_META[booking.status];
   const terminal = ['declined', 'cancelled', 'returned', 'disputed'].includes(booking.status);
   const currentStep = TIMELINE.indexOf(booking.status);
+  const rentalPayment = payments.find((p) => p.type === 'rental' && p.status === 'succeeded');
+  const depositRefund = payments.find((p) => p.type === 'refund');
 
   const price = {
     days: Math.round((Date.parse(booking.endDate) - Date.parse(booking.startDate)) / 86400000) + 1,
@@ -128,7 +145,7 @@ export const BookingDetailScreen: React.FC<StackScreenProps<'BookingDetail'>> = 
           </View>
         )}
 
-        {/* Dates */}
+        {/* Dates + parties */}
         <View style={styles.card}>
           <View style={styles.rowBetween}>
             <View>
@@ -150,9 +167,37 @@ export const BookingDetailScreen: React.FC<StackScreenProps<'BookingDetail'>> = 
             <Text style={styles.fieldLabel}>{isLender ? 'Borrower' : 'Lender'}</Text>
             <Text style={styles.fieldValue}>{isLender ? booking.borrowerName : booking.lenderName}</Text>
           </View>
+          <View style={styles.contactRow}>
+            <TouchableOpacity style={styles.contactButton} onPress={openChat}>
+              <Feather name="message-circle" size={16} color={colors.primary.main} />
+              <Text style={styles.contactText}>Message {isLender ? booking.borrowerName.split(' ')[0] : booking.lenderName.split(' ')[0]}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <PriceSummary price={price} pricePerDay={booking.rentalFee / price.days} />
+
+        {/* Money status */}
+        {booking.status !== 'requested' && booking.status !== 'declined' && booking.status !== 'cancelled' && (
+          <View style={styles.card}>
+            <View style={styles.moneyRow}>
+              <Text style={styles.moneyLabel}>Rental payment</Text>
+              <Text style={[styles.moneyValue, rentalPayment && styles.moneyOk]}>
+                {rentalPayment ? `${formatMoney(rentalPayment.amount)} · ${rentalPayment.method.toUpperCase()}` : 'Pending'}
+              </Text>
+            </View>
+            <View style={styles.moneyRow}>
+              <Text style={styles.moneyLabel}>Deposit</Text>
+              <Text style={styles.moneyValue}>{formatMoney(booking.deposit)} held</Text>
+            </View>
+            {depositRefund && (
+              <View style={styles.moneyRow}>
+                <Text style={styles.moneyLabel}>Deposit refund</Text>
+                <Text style={[styles.moneyValue, styles.moneyOk]}>✓ {formatMoney(depositRefund.amount)} returned</Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Actions */}
         {!terminal && (
@@ -169,38 +214,59 @@ export const BookingDetailScreen: React.FC<StackScreenProps<'BookingDetail'>> = 
               <Button title="Cancel request" variant="outline" onPress={() => mutate(api.cancelBooking)} />
             )}
 
-            {booking.status === 'accepted' && (
+            {!isLender && booking.status === 'accepted' && (
               <>
                 <Button
-                  title="Pay rental + deposit"
-                  onPress={() => mutate(api.payBooking)}
-                  loading={busy}
+                  title={`Pay ${formatMoney(booking.total)} (rental + deposit)`}
+                  onPress={() => navigation.navigate('Payment', { bookingId })}
                 />
                 <View style={styles.gap} />
                 <Button title="Cancel booking" variant="outline" onPress={() => mutate(api.cancelBooking)} />
-                <Text style={styles.devNote}>Test mode — no real payment is taken yet.</Text>
               </>
             )}
 
-            {booking.status === 'paid' && (
-              <View style={styles.infoBox}>
-                <Feather name="camera" size={16} color={colors.primary.main} />
-                <Text style={styles.infoText}>
-                  Once you meet on campus, capture “before” condition photos to start the rental.
-                  (Photo capture arrives in the next milestone.)
-                </Text>
+            {isLender && booking.status === 'accepted' && (
+              <View style={styles.waitBox}>
+                <Feather name="clock" size={16} color={colors.primary.main} />
+                <Text style={styles.waitText}>Waiting for the borrower to pay.</Text>
               </View>
             )}
 
+            {booking.status === 'paid' && (
+              <Button
+                title={isLender ? 'View handover' : 'Capture photos & pickup'}
+                onPress={() => navigation.navigate('Handover', { bookingId })}
+                loading={busy}
+              />
+            )}
+
             {booking.status === 'active' && (
-              <View style={styles.infoBox}>
-                <Feather name="clock" size={16} color={colors.primary.main} />
-                <Text style={styles.infoText}>
-                  Rental in progress. Return on {formatLong(booking.endDate)} and capture “after”
-                  photos to release the deposit.
+              <Button
+                title={isLender ? 'View return progress' : 'Return the item'}
+                onPress={() => navigation.navigate('Handover', { bookingId })}
+              />
+            )}
+          </View>
+        )}
+
+        {booking.status === 'returned' && (
+          <View style={styles.actions}>
+            {!isLender && !depositRefund && (
+              <View style={styles.waitBox}>
+                <Feather name="clock" size={16} color={colors.accent.main} />
+                <Text style={styles.waitText}>
+                  Returned ✓ — {formatMoney(booking.deposit)} deposit refund pending lender release.
                 </Text>
               </View>
             )}
+            {isLender && !depositRefund && (
+              <Button
+                title="Release deposit"
+                onPress={() => navigation.navigate('Handover', { bookingId })}
+              />
+            )}
+            <Button title="Rate this rental" variant="outline" onPress={() => navigation.navigate('Reviews', { bookingId })} />
+            <Button title="Report a problem" variant="outline" onPress={() => navigation.navigate('Disputes')} />
           </View>
         )}
       </ScrollView>
@@ -291,26 +357,52 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neutral.border,
     marginVertical: spacing[3],
   },
+  contactRow: {
+    borderTopWidth: borders.width.thin,
+    borderTopColor: colors.neutral.border,
+    marginTop: spacing[2],
+    paddingTop: spacing[3],
+  },
+  contactButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+  },
+  contactText: {
+    fontFamily: typography.fonts.bodyBold,
+    fontSize: typography.sizes.body,
+    color: colors.primary.main,
+  },
+  moneyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing[1],
+  },
+  moneyLabel: {
+    fontFamily: typography.fonts.body,
+    fontSize: typography.sizes.body,
+    color: colors.neutral.textSecondary,
+  },
+  moneyValue: {
+    fontFamily: typography.fonts.bodyBold,
+    fontSize: typography.sizes.body,
+    color: colors.neutral.textPrimary,
+  },
+  moneyOk: { color: colors.accent.main },
   actions: { gap: spacing[3] },
   gap: { height: spacing[1] },
-  devNote: {
-    textAlign: 'center',
-    fontFamily: typography.fonts.body,
-    fontSize: typography.sizes.small,
-    color: colors.neutral.textMuted,
-  },
-  infoBox: {
+  waitBox: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing[2],
     backgroundColor: '#FFF4E6',
     borderRadius: borders.radius.md,
     padding: spacing[3],
   },
-  infoText: {
+  waitText: {
     flex: 1,
     fontFamily: typography.fonts.body,
     fontSize: typography.sizes.body,
     color: colors.neutral.textPrimary,
-    lineHeight: typography.sizes.body * typography.lineHeights.normal,
   },
 });

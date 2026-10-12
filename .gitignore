@@ -39,6 +39,9 @@ Thumbs.db
 .opencode/
 skills-lock.json
 
+# Discarded Android Studio blank template (kept for reference only)
+mobile-app-scaffold/
+
 # Coverage / test artifacts
 coverage/
 
