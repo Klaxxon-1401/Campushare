@@ -82,66 +82,66 @@ const seedItems: SeedItem[] = [
   {
     id: 'it_labcoat', ownerId: 'u_sarah', title: 'Chemistry Lab Coat (Size M)',
     category: 'academic', description: 'Standard cotton lab coat in good condition. Washed after every use. Fits size M comfortably.',
-    pricePerDay: 3, deposit: 10, location: 'North Campus', status: 'published',
+    pricePerDay: 30, deposit: 300, location: 'North Campus', status: 'published',
     conditionNote: 'Minor ink mark on left sleeve, otherwise clean.',
   },
   {
     id: 'it_ti84', ownerId: 'u_avisar', title: 'TI-84 Graphing Calculator',
     category: 'electronics', description: 'TI-84 Plus with all functions working. Batteries included. Great for exams and stats labs.',
-    pricePerDay: 5, deposit: 25, location: 'Central Library', status: 'published',
+    pricePerDay: 80, deposit: 1200, location: 'Central Library', status: 'published',
     conditionNote: 'Light scuffs on the sliding cover.',
   },
   {
     id: 'it_blazer', ownerId: 'u_mike', title: 'Interview Blazer (Navy, 38R)',
     category: 'clothing', description: 'Formal navy blazer, dry-cleaned. Perfect for interviews, presentations and convocation.',
-    pricePerDay: 8, deposit: 30, location: 'South Dorms', status: 'published',
+    pricePerDay: 150, deposit: 1500, location: 'South Dorms', status: 'published',
   },
   {
     id: 'it_dumbbells', ownerId: 'u_lisa', title: '20lb Dumbbell Set',
     category: 'fitness', description: 'Pair of 20lb dumbbells. Great for a short strength block. Pickup at the sports complex.',
-    pricePerDay: 4, deposit: 15, location: 'Sports Complex', status: 'published',
+    pricePerDay: 60, deposit: 600, location: 'Sports Complex', status: 'published',
     conditionNote: 'Some surface wear from normal gym use.',
   },
   {
     id: 'it_drafting', ownerId: 'u_anmol', title: 'Drafting Toolkit (Compass + Scales)',
     category: 'academic', description: 'Full geometry and drafting set: compass, set squares, protractor and scale rulers.',
-    pricePerDay: 4, deposit: 20, location: 'Engineering Block', status: 'published',
+    pricePerDay: 45, deposit: 400, location: 'Engineering Block', status: 'published',
   },
   {
     id: 'it_calc991', ownerId: 'u_sarah', title: 'Scientific Calculator FX-991',
     category: 'electronics', description: 'Casio FX-991EX. Approved for most engineering exams. Comes with a hard case.',
-    pricePerDay: 3, deposit: 15, location: 'Central Library', status: 'published',
+    pricePerDay: 40, deposit: 800, location: 'Central Library', status: 'published',
   },
   {
     id: 'it_gown', ownerId: 'u_priya', title: 'Graduation Gown (Size L)',
     category: 'clothing', description: 'Full graduation set — gown, cap and hood. Fits size L. Ideal for convocation photos.',
-    pricePerDay: 10, deposit: 40, location: 'South Dorms', status: 'published',
+    pricePerDay: 200, deposit: 2000, location: 'South Dorms', status: 'published',
   },
   {
     id: 'it_yoga', ownerId: 'u_lisa', title: 'Yoga Mat + Blocks',
     category: 'fitness', description: '6mm anti-slip yoga mat with two foam blocks and a carry strap.',
-    pricePerDay: 3, deposit: 12, location: 'Sports Complex', status: 'published',
+    pricePerDay: 35, deposit: 350, location: 'Sports Complex', status: 'published',
   },
   {
     id: 'it_lamp', ownerId: 'u_anmol', title: 'LED Clamp Study Lamp',
     category: 'electronics', description: 'Adjustable LED desk lamp with clamp mount and USB power. Three brightness levels.',
-    pricePerDay: 2, deposit: 10, location: 'North Campus', status: 'published',
+    pricePerDay: 30, deposit: 300, location: 'North Campus', status: 'published',
   },
   {
     id: 'it_shoes', ownerId: 'u_mike', title: 'Formal Shoes (UK 9)',
     category: 'clothing', description: 'Black leather formal shoes, UK size 9. Polished and ready for interviews.',
-    pricePerDay: 6, deposit: 25, location: 'West Campus', status: 'published',
+    pricePerDay: 120, deposit: 1200, location: 'West Campus', status: 'published',
   },
   // Owned by the current user, so "My Listings" has content.
   {
     id: 'it_casio', ownerId: 'u_devan', title: 'Casio FX-991EX Calculator',
     category: 'electronics', description: 'My spare scientific calculator. Kept in a case, works perfectly.',
-    pricePerDay: 3, deposit: 15, location: 'Engineering Block', status: 'published',
+    pricePerDay: 40, deposit: 800, location: 'Engineering Block', status: 'published',
   },
   {
     id: 'it_fieldkit', ownerId: 'u_devan', title: 'Survey Field Kit',
     category: 'other', description: 'Measuring tape, levelling staff and pegs for surveying labs.',
-    pricePerDay: 5, deposit: 20, location: 'Engineering Block', status: 'draft',
+    pricePerDay: 250, deposit: 2500, location: 'Engineering Block', status: 'draft',
   },
 ];
 

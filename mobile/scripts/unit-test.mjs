@@ -79,6 +79,14 @@ t('computePrice: single day rental', () => {
 t('computePrice: zero deposit', () => {
   assert.equal(pricing.computePrice(8, 0, '2026-10-20', '2026-10-21').total, 16);
 });
+t('pricing floor: minimum is ₹30/day', () => {
+  assert.equal(pricing.MIN_PRICE_PER_DAY, 30);
+  assert.equal(pricing.isValidDayRate(30), true);
+  assert.equal(pricing.isValidDayRate(60), true);
+  assert.equal(pricing.isValidDayRate(29), false);
+  assert.equal(pricing.isValidDayRate(0), false);
+  assert.equal(pricing.isValidDayRate(NaN), false);
+});
 
 // ---- formatting ------------------------------------------------------------
 t('formatMoney: whole rupees without decimals', () => {

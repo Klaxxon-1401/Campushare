@@ -151,6 +151,8 @@ Notifications: Notifications · Admin: Admin · Profile: Profile
   - A seeded **notification feed** (payment, return, deposit, message) populates the bell.
   - Seeded threads/messages populate the Messages tab immediately; **reviews and disputes are
     not seeded** — those populate as you complete returns or file a dispute.
+  - **Pricing floor:** every listing is at least **₹30/day** (enforced in the create/edit flow);
+    seeded rates run **₹30–₹250/day** with refundable deposits of ₹300–₹2,500.
 
 ---
 

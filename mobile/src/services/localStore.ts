@@ -20,7 +20,7 @@ import {
 } from '../types';
 import { addDays, eachDay, overlaps, todayISO } from '../utils/date';
 import { formatMoney } from '../utils/format';
-import { computePrice } from '../utils/pricing';
+import { computePrice, isValidDayRate, MIN_PRICE_PER_DAY } from '../utils/pricing';
 import { CURRENT_USER, seedBookings, seedItemsResolved, USER_BY_ID, USERS } from './seed';
 
 /**
@@ -223,6 +223,11 @@ export const localStore = {
   },
 
   createItem: (draft: ItemDraft, ownerId = CURRENT_USER.id): Promise<Item> => {
+    if (!isValidDayRate(draft.pricePerDay)) {
+      return Promise.reject(
+        new ApiError('PRICE_TOO_LOW', `The minimum price is ₹${MIN_PRICE_PER_DAY} per day.`)
+      );
+    }
     const owner = USER_BY_ID[ownerId] ?? CURRENT_USER;
     const now = new Date().toISOString();
     const item: Item = {
@@ -251,6 +256,11 @@ export const localStore = {
     const idx = items.findIndex((i) => i.id === id);
     if (idx === -1) {
       return Promise.reject(new ApiError('NOT_FOUND', 'Item not found', 404));
+    }
+    if (patch.pricePerDay !== undefined && !isValidDayRate(patch.pricePerDay)) {
+      return Promise.reject(
+        new ApiError('PRICE_TOO_LOW', `The minimum price is ₹${MIN_PRICE_PER_DAY} per day.`)
+      );
     }
     const updated: Item = { ...items[idx], ...patch, updatedAt: new Date().toISOString() };
     items = [...items.slice(0, idx), updated, ...items.slice(idx + 1)];

@@ -36,18 +36,18 @@ export const CAMPUS_LOCATIONS = [
 
 /** Rough replacement-value guidance used to pre-fill the deposit field. */
 export const SUGGESTED_DEPOSIT: Record<ItemCategory, number> = {
-  academic: 10,
-  clothing: 30,
-  electronics: 50,
-  fitness: 20,
-  other: 15,
+  academic: 300,
+  clothing: 800,
+  electronics: 1500,
+  fitness: 500,
+  other: 250,
 };
 
-/** Suggested day-rate per category (PROJECT_PLAN §11.2). */
+/** Suggested day-rate per category (PROJECT_PLAN §11.2). Always ≥ MIN_PRICE_PER_DAY. */
 export const SUGGESTED_RATE: Record<ItemCategory, number> = {
-  academic: 3,
-  clothing: 8,
-  electronics: 5,
-  fitness: 4,
-  other: 4,
+  academic: 40,
+  clothing: 120,
+  electronics: 60,
+  fitness: 50,
+  other: 35,
 };

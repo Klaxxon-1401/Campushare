@@ -18,6 +18,7 @@ import { api, ApiError } from '../../services/api';
 import { ItemCategory } from '../../types';
 import { StackScreenProps } from '../../navigation/types';
 import { categoryLabel, formatMoney } from '../../utils/format';
+import { MIN_PRICE_PER_DAY, isValidDayRate } from '../../utils/pricing';
 
 const STEPS = ['Details', 'Photo & pricing', 'Review'];
 
@@ -70,7 +71,8 @@ export const CreateListingScreen: React.FC<StackScreenProps<'CreateListing'>> = 
       if (!description.trim()) return 'Add a short description.';
     }
     if (step === 1) {
-      if (!price || priceNum <= 0) return 'Set a price per day greater than 0.';
+      if (!price || !isValidDayRate(priceNum))
+        return `Set a price of at least ${formatMoney(MIN_PRICE_PER_DAY)} per day.`;
       if (deposit === '' || depositNum < 0) return 'Set a deposit (0 if you need none).';
       if (!location) return 'Pick a pickup location.';
     }
@@ -195,15 +197,17 @@ export const CreateListingScreen: React.FC<StackScreenProps<'CreateListing'>> = 
             />
 
             <Input
-              label="Price per day ($)"
+              label="Price per day (₹)"
               value={price}
               onChangeText={setPrice}
               keyboardType="numeric"
               placeholder={String(SUGGESTED_RATE[category])}
-              helperText={`Suggested for ${categoryLabel(category)}: ${formatMoney(SUGGESTED_RATE[category])}/day`}
+              helperText={`Min ${formatMoney(MIN_PRICE_PER_DAY)}/day · suggested for ${categoryLabel(
+                category
+              )}: ${formatMoney(SUGGESTED_RATE[category])}/day`}
             />
             <Input
-              label="Refundable deposit ($)"
+              label="Refundable deposit (₹)"
               value={deposit}
               onChangeText={setDeposit}
               keyboardType="numeric"
