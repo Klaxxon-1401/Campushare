@@ -347,6 +347,11 @@ export const store = {
     users = [...users.slice(0, idx), updated, ...users.slice(idx + 1)];
     return updated;
   },
+
+  /** Test/development helper: full store reset (incl. ephemeral account purge). */
+  __resetStore(): void {
+    __resetStore();
+  },
 };
 
 /** Strips credentials so a UserRecord can be sent over the wire. */
@@ -368,6 +373,13 @@ export const __resetStore = (): void => {
   blockedDates.clear();
   users = seedUserRecords();
   idCounter = 5000;
+
+  // Edge case: devanduraipragash@gmail.com is an ephemeral demo account.
+  // It gets removed on every store reset (server restart) so you always start fresh.
+  const idx = users.findIndex((u) => u.email === 'devanduraipragash@gmail.com');
+  if (idx !== -1) {
+    users.splice(idx, 1);
+  }
 };
 
 export { addDays };

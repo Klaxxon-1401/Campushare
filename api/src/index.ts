@@ -11,6 +11,7 @@ dotenv.config();
 import authRoutes from './routes/auth';
 import itemRoutes from './routes/items';
 import bookingRoutes from './routes/bookings';
+import { store } from './data/store';
 import { globalLimiter } from './middleware/rateLimit';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -76,6 +77,10 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 app.listen(PORT, () => {
   console.log(`CampusShare API running on http://localhost:${PORT} (${isProd ? 'production' : 'development'})`);
   console.log(`Health check: http://localhost:${PORT}/health`);
+
+  // Edge case: purge the ephemeral demo account (devanduraipragash@gmail.com) on every restart.
+  store.__resetStore();
+  console.log('[reset] ephemeral demo account purged');
 });
 
 export default app;
