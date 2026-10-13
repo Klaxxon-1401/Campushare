@@ -29,7 +29,9 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({ options, selected,
           onPress={() => onSelect(option.key)}
           activeOpacity={0.8}
         >
-          <Text style={[styles.label, active && styles.labelActive]}>{option.label}</Text>
+          <Text style={[styles.label, active && styles.labelActive]} numberOfLines={1}>
+            {option.label}
+          </Text>
         </TouchableOpacity>
       );
     })}
@@ -37,12 +39,17 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({ options, selected,
 );
 
 const styles = StyleSheet.create({
+  // Size the row to its chips and never let sibling flex views shrink it.
+  // ScrollView defaults to flexGrow: 1 / flexShrink: 1 — the default shrink is
+  // what clipped the pills, and a hard max-height cropped labels when the font
+  // scaled up. Letting the content define the height fixes both.
   container: {
-    maxHeight: 44,
     flexGrow: 0,
+    flexShrink: 0,
   },
   content: {
     paddingHorizontal: spacing[4],
+    paddingVertical: spacing[1],
     gap: spacing[2],
     alignItems: 'center',
   },
@@ -51,6 +58,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[2],
     borderRadius: borders.radius.pill,
     backgroundColor: colors.neutral.border,
+    flexShrink: 0,
   },
   chipActive: {
     backgroundColor: colors.primary.main,

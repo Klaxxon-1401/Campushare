@@ -1,15 +1,20 @@
 # CampusShare — Progress Tracker
 
-_Last updated: 2026-10-12 (end of session) · Status: feature-complete through Week 12; release APK rebuilt with notifications, admin dashboard, and ₹30/day minimum pricing_
+_Last updated: 2026-10-13 · Status: feature-complete through Week 12; APK rebuilt with notifications, admin dashboard, ₹30/day pricing, and the category-filter layout fix_
 
 Single source of truth for what has been built, what is verified, and what remains.
 Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 
-> **Where we left off (2026-10-12):** every Week 6–12 feature is built, tested, and shipped in a
-> freshly rebuilt APK. Tonight added **in-app notifications**, an **admin dashboard**, the full
-> **Week 10–12 documentation package**, and **realistic rupee pricing (₹30/day minimum)**.
+> **Where we left off:** every Week 6–12 feature is built, tested, and shipped in a freshly rebuilt
+> APK. Tuesday added **in-app notifications**, an **admin dashboard**, the full **Week 10–12
+> documentation package**, and **realistic rupee pricing (₹30/day minimum)**.
 > The only remaining plan item is a live 20–30 student beta/UAT (§11 / `docs/week-10/UAT_REPORT.md`).
-> All work is committed locally (HEAD `8e781d6`); **nothing has been pushed** (no remote).
+> All work is committed locally; **nothing has been pushed** (no remote).
+>
+> **2026-10-13 fix — Home category-filter row clipped its chips:** a horizontal `ScrollView` keeps
+> `flexShrink: 1` by default, so the row shrank below its content height and clipped the pills (a
+> hard `maxHeight: 44` also cropped labels under font scaling). The row now sizes to its chips and
+> never shrinks (`flexGrow: 0` / `flexShrink: 0`); APK rebuilt.
 
 ---
 
@@ -26,7 +31,7 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 | API smoke tests | 19 / 19 passing |
 | TypeScript | Clean (`tsc --noEmit`) |
 | Android JS bundle | Builds (Hermes) |
-| Android APK | Rebuilt 2026-10-12 — `com.campusshare.app` v1.0.0, verified |
+| Android APK | Rebuilt 2026-10-13 — `com.campusshare.app` v1.0.0, verified |
 | Currency | Rupees (INR, `₹`) app-wide |
 | Listing pricing | **₹30/day minimum** (seeded ₹30–₹250); enforced in create/edit |
 | Emojis in UI | None — Feather icon set only |
@@ -210,7 +215,8 @@ Acceptance testing and the security pass are documented in
   - `CampusShare` v1.0.0, package `com.campusshare.app`, target SDK 36
   - Launchable `com.campusshare.app.MainActivity`, signed with the **debug keystore**
     (fine for sideloading; Play-store signing goes through EAS).
-  - Last rebuilt **2026-10-12** with in-app notifications, the admin dashboard, and ₹30/day pricing.
+  - Last rebuilt **2026-10-13** with in-app notifications, the admin dashboard, ₹30/day pricing,
+    and the category-filter layout fix.
 - **EAS profiles** (`mobile/eas.json`): `development`, `preview` (APK),
   `production` (AAB, remote versioning).
 
