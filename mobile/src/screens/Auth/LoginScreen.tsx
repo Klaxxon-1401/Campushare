@@ -10,26 +10,38 @@ import {
 import { colors, typography, spacing, borders } from '../../theme';
 import { Feather } from '@expo/vector-icons';
 import { Button, Input } from '../../components/ui';
+import { useAuth } from '../../context/AuthContext';
+import { ApiError } from '../../services/http';
 
 interface LoginScreenProps {
   navigation: any;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
-    if (!email || !password) return;
-
+    if (!email || !password) {
+      setError('Enter your campus email and password.');
+      return;
+    }
+    setError('');
     setLoading(true);
     try {
-      // TODO: Implement login logic (never log credentials)
+      await signIn(email, password);
       navigation.navigate('Main');
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch (e) {
+      const err = e as ApiError;
+      if (err.code === 'NOT_VERIFIED') {
+        navigation.navigate('VerificationPending', { email });
+      } else {
+        setError(err.message || 'Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -92,6 +104,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             <Text style={styles.forgotPasswordText}>Forgot password?</Text>
           </TouchableOpacity>
         </View>
+
+        {error ? (
+          <View style={styles.errorRow}>
+            <Feather name="alert-circle" size={14} color={colors.state.error} />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : null}
       </View>
 
       {/* Action Buttons */}
@@ -118,6 +137,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+    marginTop: spacing[4],
+  },
+  errorText: {
+    flex: 1,
+    fontFamily: typography.fonts.body,
+    fontSize: typography.sizes.body,
+    color: colors.state.error,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.neutral.background,

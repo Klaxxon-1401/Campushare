@@ -11,17 +11,22 @@ import {
 import { colors, typography, spacing, borders } from '../../theme';
 import { Feather } from '@expo/vector-icons';
 import { Button, Input } from '../../components/ui';
+import { useAuth } from '../../context/AuthContext';
+import { ApiError } from '../../services/http';
 
 interface RegisterScreenProps {
   navigation: any;
 }
 
 export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
+  const { signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const calculatePasswordStrength = (pwd: string) => {
     let strength = 0;
@@ -38,9 +43,30 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
     setPasswordStrength(calculatePasswordStrength(value));
   };
 
-  const handleRegister = () => {
-    // TODO: Implement registration logic (never log credentials)
-    navigation.navigate('OTP', { email });
+  const handleRegister = async () => {
+    if (!email || !studentId || !password) {
+      setError('Fill in every field to continue.');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      const result = await signUp({ email, studentId, password });
+      navigation.navigate('OTP', { email: result.email, devCode: result.devCode });
+    } catch (e) {
+      const err = e as ApiError;
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -128,6 +154,13 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
           </Text>
         </View>
 
+        {error ? (
+          <View style={styles.errorRow}>
+            <Feather name="alert-circle" size={14} color={colors.state.error} />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : null}
+
         {/* Action Button */}
         <View style={styles.actions}>
           <Button
@@ -135,6 +168,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
             onPress={handleRegister}
             variant="primary"
             size="large"
+            loading={loading}
           />
         </View>
       </ScrollView>
@@ -143,6 +177,19 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
 };
 
 const styles = StyleSheet.create({
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+    paddingHorizontal: spacing[4],
+    marginBottom: spacing[3],
+  },
+  errorText: {
+    flex: 1,
+    fontFamily: typography.fonts.body,
+    fontSize: typography.sizes.body,
+    color: colors.state.error,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.neutral.background,

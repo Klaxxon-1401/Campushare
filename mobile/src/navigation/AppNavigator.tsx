@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
@@ -7,6 +7,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { colors, borders } from '../theme';
 import { RootStackParamList, MainTabParamList } from './types';
+import { useAuth } from '../context/AuthContext';
 
 // Auth screens
 import { WelcomeScreen } from '../screens/Auth/WelcomeScreen';
@@ -107,9 +108,23 @@ function MainTabs() {
 }
 
 export default function AppNavigator() {
+  const { status } = useAuth();
+
+  // Hold the UI until a persisted session has been checked.
+  if (status === 'restoring') {
+    return (
+      <View style={styles.restoring}>
+        <ActivityIndicator color={colors.primary.main} />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        initialRouteName={status === 'signedIn' ? 'Main' : 'Welcome'}
+        screenOptions={{ headerShown: false }}
+      >
         {/* Auth flow */}
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
@@ -146,6 +161,12 @@ export default function AppNavigator() {
 }
 
 const styles = StyleSheet.create({
+  restoring: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.neutral.background,
+  },
   tabBar: {
     height: 64,
     paddingBottom: 8,

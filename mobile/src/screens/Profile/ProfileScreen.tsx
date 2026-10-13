@@ -7,6 +7,7 @@ import { colors, typography, spacing, borders } from '../../theme';
 import { Badge } from '../../components';
 import { api } from '../../services/api';
 import { CURRENT_USER } from '../../services/seed';
+import { useAuth } from '../../context/AuthContext';
 import { TabScreenProps } from '../../navigation/types';
 import { initials } from '../../utils/format';
 
@@ -20,7 +21,9 @@ interface MenuItem {
 
 export const ProfileScreen: React.FC<TabScreenProps<'Profile'>> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const user = CURRENT_USER;
+  const { user: sessionUser, signOut } = useAuth();
+  // Prefer the signed-in account; fall back to the demo user for local data.
+  const user = sessionUser ?? CURRENT_USER;
   const [unread, setUnread] = useState(0);
   const [notifUnread, setNotifUnread] = useState(0);
 
@@ -99,7 +102,13 @@ export const ProfileScreen: React.FC<TabScreenProps<'Profile'>> = ({ navigation 
           ))}
         </View>
 
-        <TouchableOpacity style={styles.logout} onPress={() => navigation.navigate('Welcome')}>
+        <TouchableOpacity
+          style={styles.logout}
+          onPress={async () => {
+            await signOut();
+            navigation.navigate('Welcome');
+          }}
+        >
           <Feather name="log-out" size={16} color={colors.state.error} />
           <Text style={styles.logoutText}>Log out</Text>
         </TouchableOpacity>

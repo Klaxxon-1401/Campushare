@@ -11,6 +11,8 @@ import {
 import { colors, typography, spacing, borders } from '../../theme';
 import { Feather } from '@expo/vector-icons';
 import { Button } from '../../components/ui';
+import { useAuth } from '../../context/AuthContext';
+import { ApiError } from '../../services/http';
 
 interface OTPScreenProps {
   navigation: any;
@@ -18,10 +20,13 @@ interface OTPScreenProps {
 }
 
 export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
-  const { email } = route.params;
+  const { email, devCode } = route.params;
+  const { verifyOtp, resendOtp } = useAuth();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(900); // 15 minutes in seconds
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -48,24 +53,38 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
     }
   };
 
+  const otpString = otp.join('');
+  // Server enforces a 60s resend cooldown; only allow resend after that.
+  const canResend = timer <= 840;
+
   const handleVerify = async () => {
-    const otpString = otp.join('');
     if (otpString.length !== 6) return;
 
+    setError('');
+    setNotice('');
     setLoading(true);
     try {
-      // TODO: Implement OTP verification logic (never log OTP codes)
-      navigation.navigate('VerificationPending');
-    } catch (error) {
-      console.error('OTP verification failed:', error);
+      await verifyOtp(email, otpString);
+      navigation.navigate('Main');
+    } catch (e) {
+      const err = e as ApiError;
+      setError(err.message || 'Verification failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResend = () => {
-    setTimer(900);
-    // TODO: Implement resend OTP logic (never log user emails)
+  const handleResend = async () => {
+    setError('');
+    setNotice('');
+    try {
+      const result = await resendOtp(email);
+      setTimer(900);
+      setNotice(result.devCode ? `New code sent (dev code: ${result.devCode})` : 'A new code is on its way.');
+    } catch (e) {
+      const err = e as ApiError;
+      setError(err.message || 'Could not resend the code. Please try again.');
+    }
   };
 
   return (
@@ -113,17 +132,25 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
           ))}
         </View>
 
+        {/* Dev hint — the API returns the OTP outside production */}
+        {devCode ? <Text style={styles.devHint}>Dev code: {devCode}</Text> : null}
+
         {/* Timer */}
         <Text style={styles.timer}>
           Code expires in {formatTimer(timer)}
         </Text>
 
+        {error ? (
+          <View style={styles.messageRow}>
+            <Feather name="alert-circle" size={14} color={colors.state.error} />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : null}
+        {notice ? <Text style={styles.noticeText}>{notice}</Text> : null}
+
         {/* Resend Link */}
-        <TouchableOpacity
-          onPress={handleResend}
-          disabled={timer > 0}
-        >
-          <Text style={[styles.resendLink, timer > 0 && styles.resendLinkDisabled]}>
+        <TouchableOpacity onPress={handleResend} disabled={!canResend}>
+          <Text style={[styles.resendLink, !canResend && styles.resendLinkDisabled]}>
             Resend Code
           </Text>
         </TouchableOpacity>
@@ -145,6 +172,29 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
+  devHint: {
+    marginTop: spacing[4],
+    fontFamily: typography.fonts.bodyBold,
+    fontSize: typography.sizes.body,
+    color: colors.primary.main,
+  },
+  messageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+    marginTop: spacing[3],
+  },
+  errorText: {
+    fontFamily: typography.fonts.body,
+    fontSize: typography.sizes.body,
+    color: colors.state.error,
+  },
+  noticeText: {
+    marginTop: spacing[3],
+    fontFamily: typography.fonts.body,
+    fontSize: typography.sizes.body,
+    color: colors.accent.main,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.neutral.background,

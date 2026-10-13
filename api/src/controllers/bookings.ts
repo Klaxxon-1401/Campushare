@@ -57,7 +57,7 @@ export class BookingController {
     try {
       const body = createBookingSchema.parse(req.body);
       // TODO: borrowerId from the verified JWT.
-      const result = store.createBooking(body, 'u_dev');
+      const result = store.createBooking(body, 'u_devan');
       if ('error' in result) {
         return res.status(409).json({ error: result.error });
       }
@@ -154,7 +154,7 @@ export class BookingController {
   }
 
   async listBookings(req: Request, res: Response) {
-    const userId = typeof req.query.userId === 'string' ? req.query.userId : 'u_dev';
+    const userId = typeof req.query.userId === 'string' ? req.query.userId : 'u_devan';
     const lender = req.query.lender === 'true';
     res.json({ bookings: store.listBookings({ userId, lender }) });
   }

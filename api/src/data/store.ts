@@ -23,7 +23,7 @@ export interface SeedUser {
 }
 
 export const SEED_USERS: SeedUser[] = [
-  { id: 'u_dev', name: 'Devan D', role: 'student', rating: 4.9, reviewCount: 12, email: 'devan.d@student.university.edu', studentId: '22CS1043' },
+  { id: 'u_devan', name: 'Devan D', role: 'student', rating: 4.9, reviewCount: 12, email: 'devan.d@student.university.edu', studentId: '22CS1042' },
   { id: 'u_avisar', name: 'Avisar Anand', role: 'student', rating: 4.8, reviewCount: 9, email: 'avisar.a@student.university.edu', studentId: '22CS1102' },
   { id: 'u_anmol', name: 'Anmol Kumar', role: 'student', rating: 4.7, reviewCount: 6, email: 'anmol.k@student.university.edu', studentId: '22EC2087' },
   { id: 'u_sarah', name: 'Sarah M.', role: 'student', rating: 4.9, reviewCount: 21, email: 'sarah.m@student.university.edu', studentId: '21CH3005' },
@@ -76,10 +76,10 @@ const SEED_ITEMS: SeedDef[] = [
   { id: 'it_yoga', ownerId: 'u_lisa', title: 'Yoga Mat + Blocks', category: 'fitness',
     description: '6mm anti-slip yoga mat with two foam blocks and a carry strap.',
     pricePerDay: 3, deposit: 12, location: 'Sports Complex', status: 'published' },
-  { id: 'it_casio', ownerId: 'u_dev', title: 'Casio FX-991EX Calculator', category: 'electronics',
+  { id: 'it_casio', ownerId: 'u_devan', title: 'Casio FX-991EX Calculator', category: 'electronics',
     description: 'My spare scientific calculator. Kept in a case, works perfectly.',
     pricePerDay: 3, deposit: 15, location: 'Engineering Block', status: 'published' },
-  { id: 'it_fieldkit', ownerId: 'u_dev', title: 'Survey Field Kit', category: 'other',
+  { id: 'it_fieldkit', ownerId: 'u_devan', title: 'Survey Field Kit', category: 'other',
     description: 'Measuring tape, levelling staff and pegs for surveying labs.',
     pricePerDay: 5, deposit: 20, location: 'Engineering Block', status: 'draft' },
 ];
@@ -170,7 +170,7 @@ export const store = {
   },
 
   createItem(input: ItemDraftInput, ownerId: string): StoredItem {
-    const owner = userOf(ownerId) ?? userOf('u_dev')!;
+    const owner = userOf(ownerId) ?? userOf('u_devan')!;
     const item: StoredItem = {
       id: nextId('it'),
       ...input,
@@ -265,7 +265,7 @@ export const store = {
     if (!store.isRangeAvailable(item.id, input.startDate, input.endDate)) {
       return { error: 'Those dates are already booked. Please pick another range.' };
     }
-    const borrower = userOf(borrowerId) ?? userOf('u_dev')!;
+    const borrower = userOf(borrowerId) ?? userOf('u_devan')!;
     const rentalFee = item.pricePerDay * days;
     const booking: Booking = {
       id: nextId('bk'),

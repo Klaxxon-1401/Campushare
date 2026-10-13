@@ -38,7 +38,7 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 | Currency | Rupees (INR, `₹`) app-wide |
 | Listing pricing | **₹30/day minimum** (seeded ₹30–₹250); enforced in create/edit |
 | Emojis in UI | None — Feather icon set only |
-| Auth / real backend | Backend auth built (API); mobile app not yet wired |
+| Auth / real backend | Wired: app ⇄ API, JWT in expo-secure-store |
 
 ---
 
@@ -94,9 +94,12 @@ CampusRental/
 - **Email service:** `api/src/services/email.ts` — provider-agnostic; uses **Resend** when
   `RESEND_API_KEY` is set, otherwise logs messages to the server console (zero-setup dev).
   `npm run email:test` sends a live test; `npm run auth:smoke` covers the full auth flow.
-- **Mobile screens (UI):** Welcome, Register, OTP, Login, Verification-pending
-  (`src/screens/Auth/*`); gated flow `Welcome → Register → OTP → VerificationPending / Login → Main`.
-  Still backed by the local store — wiring the app to the API is the next step.
+- **Mobile app — wired:** the Auth screens call the API through `AuthContext`
+  (`register → OTP → verify`, `login`, `me`); the JWT is kept in **expo-secure-store**
+  (AsyncStorage fallback) and re-attached as a bearer token on launch. The navigator starts on
+  `Main` when a session is restored, otherwise `Welcome`; logout clears the session. API base URL
+  comes from `EXPO_PUBLIC_API_URL` (default `http://10.0.2.2:3000/v1`); cleartext HTTP is enabled
+  in the manifest for the local API.
 
 ### 4.2 Listings & discovery
 - Home feed with category chips, campus-verified banner, and header badges for messages + notifications.

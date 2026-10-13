@@ -67,7 +67,7 @@ export class ItemController {
     try {
       const body = createItemSchema.parse(req.body);
       // TODO: auth middleware — ownerId comes from the verified JWT, never the body.
-      const item = store.createItem(body, 'u_dev');
+      const item = store.createItem(body, 'u_devan');
       res.status(201).json({ message: 'Item created as draft', item });
     } catch (error) {
       if (error instanceof z.ZodError) {
