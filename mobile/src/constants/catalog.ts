@@ -34,13 +34,17 @@ export const CAMPUS_LOCATIONS = [
   'Sports Complex',
 ];
 
-/** Rough replacement-value guidance used to pre-fill the deposit field. */
+/**
+ * Suggested deposit pre-fill: 10% of an item's brand-new value (PROJECT_PLAN §14).
+ * The figures below are 10% of the category's typical replacement value; a
+ * value-lookup API will replace this estimate later.
+ */
 export const SUGGESTED_DEPOSIT: Record<ItemCategory, number> = {
-  academic: 300,
-  clothing: 800,
-  electronics: 1500,
-  fitness: 500,
-  other: 250,
+  academic: 30,
+  clothing: 80,
+  electronics: 150,
+  fitness: 50,
+  other: 25,
 };
 
 /** Suggested day-rate per category (PROJECT_PLAN §11.2). Always ≥ MIN_PRICE_PER_DAY. */

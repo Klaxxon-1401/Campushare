@@ -212,7 +212,9 @@ export const CreateListingScreen: React.FC<StackScreenProps<'CreateListing'>> = 
               onChangeText={setDeposit}
               keyboardType="numeric"
               placeholder={String(SUGGESTED_DEPOSIT[category])}
-              helperText={`Rough replacement value: ${formatMoney(SUGGESTED_DEPOSIT[category])}`}
+              helperText={`Fully refunded on a clean return · suggested ${formatMoney(
+                SUGGESTED_DEPOSIT[category]
+              )} (about 10% of the item's value)`}
             />
 
             <Text style={styles.fieldLabel}>Pickup location</Text>
