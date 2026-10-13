@@ -7,10 +7,11 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 
 > **Where we left off:** every Week 6–12 feature is built, tested, and shipped in a freshly rebuilt
 > APK. Recent sessions added **in-app notifications**, an **admin dashboard**, the **Week 10–12
-> documentation package**, **realistic rupee pricing (₹30/day minimum)**, and the **backend auth
-> system** (JWT + scrypt passwords + email OTP via Resend). Remaining: wire the app to the auth API,
-> verify a Resend sending domain, and run the live 20–30 student beta/UAT (§11). All work is
-> committed locally; **nothing has been pushed** (no remote).
+> documentation package**, **realistic rupee pricing (₹30/day minimum)**, and a **real auth system**
+> — JWT + scrypt passwords + email OTP on the API, **wired into the app** (token in
+> expo-secure-store), with items & bookings now **authorized server-side**. Remaining: verify a
+> Resend sending domain and run the live 20–30 student beta/UAT (§11). All work is committed
+> locally; **nothing has been pushed** (no remote).
 >
 > **2026-10-13 fix — Home category-filter row clipped its chips:** a horizontal `ScrollView` keeps
 > `flexShrink: 1` by default, so the row shrank below its content height and clipped the pills (a
@@ -29,7 +30,7 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 | Mobile source | 54 TS/TSX files under `mobile/src` |
 | API | Express + TypeScript, 11 files, in-memory store |
 | Mobile unit tests | 17 / 17 passing |
-| API smoke tests | 19 / 19 passing |
+| API smoke tests | 38 / 38 passing |
 | API auth smoke | 19 / 19 passing |
 | API auth | JWT · scrypt passwords · email OTP via Resend |
 | TypeScript | Clean (`tsc --noEmit`) |
@@ -91,6 +92,11 @@ CampusRental/
   `sub / email / role / verificationStatus`. `requireAuth` / `requireVerified` / `requireAdmin`
   middleware resolve the bearer token to a verified user. In dev the OTP is also returned as
   `devCode` so the flow is testable without an inbox.
+- **Authorization on resources:** items & bookings are protected. Writes require a signed-in,
+  verified user, and `ownerId` / `borrowerId` are taken from the JWT — never the body. Item
+  edit/delete and booking accept/decline/confirm-return are owner-only; pay/return are
+  borrower-only; pickup and cancel are borrower-or-lender; reads are participant-or-admin. Draft
+  listings are private to their owner. Denied access returns `403 FORBIDDEN`.
 - **Email service:** `api/src/services/email.ts` — provider-agnostic; uses **Resend** when
   `RESEND_API_KEY` is set, otherwise logs messages to the server console (zero-setup dev).
   `npm run email:test` sends a live test; `npm run auth:smoke` covers the full auth flow.
@@ -207,14 +213,16 @@ Notifications: Notifications · Admin: Admin · Profile: Profile
 | Mobile types | `cd mobile && npx tsc --noEmit` | Clean |
 | Mobile unit tests | `cd mobile && node scripts/unit-test.mjs` | 17 / 17 |
 | Android bundle | `cd mobile && npx expo export --platform android` | Builds (Hermes) |
-| API smoke | `cd api && npm run smoke` | 19 / 19 |
+| API smoke | `cd api && npm run smoke` | 38 / 38 |
 | API auth smoke | `cd api && npm run auth:smoke` | 19 / 19 |
 
 Unit tests cover date math (`daysInclusive`, `eachDay`, `overlaps`, `addDays`, `todayISO`,
 `timeAgo`), pricing (`computePrice`, the **₹30/day floor**), and formatting (`formatMoney` → `₹`,
 `initials`).
 API smoke covers items/search/pagination, availability, the full booking lifecycle,
-409 double-booking, illegal transitions, past-date rejection, and validation.
+409 double-booking, illegal transitions, past-date rejection, validation, and the authorization
+layer (401 without a token, 403 for non-owners / non-participants, token-derived ownership,
+and draft privacy).
 API auth smoke covers campus-domain + password validation, register, duplicate email, unverified
 login block, OTP resend cooldown, wrong/expired code, successful verification, JWT issuance,
 `/me` with/without a token, wrong password, and seeded-user login.
@@ -284,18 +292,17 @@ unset ANDROID_SDK_ROOT
 
 ## 11. Next steps (post-course)
 
-1. **Wire the mobile app to the auth API** — swap the local-store login for real
-   `register / login / verify / me` calls, store the JWT (expo-secure-store), send it as a bearer
-   token, and guard `ownerId` / `borrowerId` on items & bookings with `requireAuth` / `requireVerified`.
-2. **Verify a sending domain in Resend** — until then `onboarding@resend.dev` only delivers to the
+1. **Verify a sending domain in Resend** — until then `onboarding@resend.dev` only delivers to the
    account email, so real OTPs to student addresses won't send (the API degrades gracefully meanwhile).
+2. **Point the app's item/booking screens at the API** — they still read from `localStore`; swap them
+   for the (now protected) `/items` and `/bookings` endpoints and send the bearer token.
 3. Firestore backend replacing `localStore` (contract already mirrored in `api.ts`).
 4. Stripe Connect for real payments and deposit holds.
 5. Upload condition photos to Firebase Storage (model already in place).
 6. Push notifications for chat and booking updates (the in-app **notification feed** is already
    built client-side; the push transport is the remaining piece).
-7. Sync the API seed data + price validation with the ₹30/day floor (the backend was intentionally
-   left untouched — the app enforces the floor, the API does not yet).
+7. Sync the API seed data + price validation with the ₹30/day floor (the app enforces the floor,
+   the API does not yet).
 8. Live 20–30 student beta + UAT metrics (script ready in `docs/week-10/UAT_REPORT.md`).
 
 ---

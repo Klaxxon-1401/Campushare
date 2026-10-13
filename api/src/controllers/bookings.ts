@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { store } from '../data/store';
 import { ISO_DATE, paramId } from '../validation';
-import { BookingStatus } from '../types';
+import { Booking, BookingStatus } from '../types';
+import { AuthedRequest, isAdmin } from '../middleware/auth';
 
 const isoDate = z
   .string()
@@ -37,11 +38,27 @@ const ACCESSIBLE_FROM: Record<BookingStatus, BookingStatus[]> = {
   cancelled: [],
 };
 
-/** Applies a status change with a state-machine guard. */
-function applyTransition(id: string, status: BookingStatus, res: Response) {
+const borrower = (b: Booking, userId: string) => b.borrowerId === userId;
+const lender = (b: Booking, userId: string) => b.lenderId === userId;
+const participant = (b: Booking, userId: string) => borrower(b, userId) || lender(b, userId);
+
+const forbidden = (res: Response, message: string) =>
+  res.status(403).json({ error: { code: 'FORBIDDEN', message } });
+
+/** Applies a status change with a role + state-machine guard. */
+function applyTransition(
+  id: string,
+  status: BookingStatus,
+  res: Response,
+  guard: (booking: Booking) => boolean,
+  forbiddenMessage: string
+) {
   const booking = store.getBooking(id);
   if (!booking) {
     return res.status(404).json({ error: 'Booking not found' });
+  }
+  if (!guard(booking)) {
+    return forbidden(res, forbiddenMessage);
   }
   if (!ACCESSIBLE_FROM[booking.status].includes(status)) {
     return res.status(409).json({
@@ -56,8 +73,9 @@ export class BookingController {
   async createBooking(req: Request, res: Response) {
     try {
       const body = createBookingSchema.parse(req.body);
-      // TODO: borrowerId from the verified JWT.
-      const result = store.createBooking(body, 'u_devan');
+      // borrowerId comes from the verified JWT, never the body.
+      const user = (req as AuthedRequest).user!;
+      const result = store.createBooking(body, user.id);
       if ('error' in result) {
         return res.status(409).json({ error: result.error });
       }
@@ -71,22 +89,41 @@ export class BookingController {
   }
 
   async acceptBooking(req: Request, res: Response) {
-    applyTransition(paramId(req.params.id), 'accepted', res);
+    const user = (req as AuthedRequest).user!;
+    applyTransition(
+      paramId(req.params.id),
+      'accepted',
+      res,
+      (b) => lender(b, user.id) || isAdmin(user),
+      'Only the item owner can accept this booking.'
+    );
   }
 
   async declineBooking(req: Request, res: Response) {
-    applyTransition(paramId(req.params.id), 'declined', res);
+    const user = (req as AuthedRequest).user!;
+    applyTransition(
+      paramId(req.params.id),
+      'declined',
+      res,
+      (b) => lender(b, user.id) || isAdmin(user),
+      'Only the item owner can decline this booking.'
+    );
   }
 
   async payBooking(req: Request, res: Response) {
     // TODO: Stripe PaymentIntent capture (PROJECT_PLAN §14). For now the
     // transition is the same; the mock payment record is returned for tests.
-    const booking = store.getBooking(paramId(req.params.id));
+    const id = paramId(req.params.id);
+    const booking = store.getBooking(id);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    const user = (req as AuthedRequest).user!;
+    if (!borrower(booking, user.id) && !isAdmin(user)) {
+      return forbidden(res, 'Only the borrower can pay for this booking.');
+    }
     if (booking.status !== 'accepted') {
       return res.status(409).json({ error: 'Booking can only be paid after being accepted.' });
     }
-    const updated = store.setBookingStatus(paramId(req.params.id), 'paid');
+    const updated = store.setBookingStatus(id, 'paid');
     res.json({
       message: 'Payment successful (mock)',
       booking: updated,
@@ -98,6 +135,10 @@ export class BookingController {
     const id = paramId(req.params.id);
     const booking = store.getBooking(id);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    const user = (req as AuthedRequest).user!;
+    if (!participant(booking, user.id) && !isAdmin(user)) {
+      return forbidden(res, 'Only the borrower or lender can confirm pickup.');
+    }
     if (booking.status !== 'paid') {
       return res.status(409).json({ error: 'Booking must be paid before pickup.' });
     }
@@ -112,6 +153,10 @@ export class BookingController {
     const id = paramId(req.params.id);
     const booking = store.getBooking(id);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    const user = (req as AuthedRequest).user!;
+    if (!borrower(booking, user.id) && !isAdmin(user)) {
+      return forbidden(res, 'Only the borrower can upload return photos.');
+    }
     if (booking.status !== 'active') {
       return res.status(409).json({ error: 'Booking must be active before returning.' });
     }
@@ -123,6 +168,10 @@ export class BookingController {
     const id = paramId(req.params.id);
     const booking = store.getBooking(id);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    const user = (req as AuthedRequest).user!;
+    if (!lender(booking, user.id) && !isAdmin(user)) {
+      return forbidden(res, 'Only the item owner can confirm the return.');
+    }
     if (booking.status !== 'returned') {
       return res.status(409).json({ error: 'Booking must be marked returned first.' });
     }
@@ -134,12 +183,17 @@ export class BookingController {
   }
 
   async cancelBooking(req: Request, res: Response) {
-    const booking = store.getBooking(paramId(req.params.id));
+    const id = paramId(req.params.id);
+    const booking = store.getBooking(id);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    const user = (req as AuthedRequest).user!;
+    if (!participant(booking, user.id) && !isAdmin(user)) {
+      return forbidden(res, 'Only the borrower or lender can cancel this booking.');
+    }
     if (['declined', 'cancelled', 'returned', 'disputed'].includes(booking.status)) {
       return res.status(409).json({ error: 'Booking can no longer be cancelled.' });
     }
-    const updated = store.setBookingStatus(paramId(req.params.id), 'cancelled');
+    const updated = store.setBookingStatus(id, 'cancelled');
     res.json({
       message: 'Booking cancelled',
       booking: updated,
@@ -150,12 +204,17 @@ export class BookingController {
   async getBooking(req: Request, res: Response) {
     const booking = store.getBooking(paramId(req.params.id));
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    const user = (req as AuthedRequest).user!;
+    if (!participant(booking, user.id) && !isAdmin(user)) {
+      return forbidden(res, 'You do not have access to this booking.');
+    }
     res.json({ booking });
   }
 
   async listBookings(req: Request, res: Response) {
-    const userId = typeof req.query.userId === 'string' ? req.query.userId : 'u_devan';
-    const lender = req.query.lender === 'true';
-    res.json({ bookings: store.listBookings({ userId, lender }) });
+    // The user id always comes from the token — a client cannot list someone else's bookings.
+    const user = (req as AuthedRequest).user!;
+    const lenderView = req.query.lender === 'true';
+    res.json({ bookings: store.listBookings({ userId: user.id, lender: lenderView }) });
   }
 }

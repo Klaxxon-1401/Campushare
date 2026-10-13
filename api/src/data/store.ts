@@ -148,11 +148,9 @@ export const store = {
     const page = Math.max(1, opts.page ?? 1);
     const limit = Math.min(50, Math.max(1, opts.limit ?? 20));
     let result = items.filter((i) => {
-      if (opts.ownerId) {
-        if (i.ownerId !== opts.ownerId) return false;
-      } else if (!opts.includeDrafts && i.status !== 'published') {
-        return false;
-      }
+      // Drafts (and any non-published item) are private unless explicitly requested.
+      if (!opts.includeDrafts && i.status !== 'published') return false;
+      if (opts.ownerId && i.ownerId !== opts.ownerId) return false;
       if (opts.category && opts.category !== 'all' && i.category !== opts.category) return false;
       if (opts.location && i.location !== opts.location) return false;
       const q = opts.q?.trim().toLowerCase();

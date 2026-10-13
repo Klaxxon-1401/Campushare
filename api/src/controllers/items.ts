@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { store } from '../data/store';
 import { CATEGORIES, paramId } from '../validation';
+import { AuthedRequest, isAdmin } from '../middleware/auth';
 
 export const createItemSchema = z
   .object({
@@ -40,12 +41,18 @@ export class ItemController {
     try {
       const page = validators.page.parse(req.query.page ?? 1);
       const limit = validators.limit.parse(req.query.limit ?? 20);
+      const ownerId = typeof req.query.ownerId === 'string' ? req.query.ownerId : undefined;
+      const wantsDrafts =
+        typeof req.query.includeDrafts === 'string' ? req.query.includeDrafts === 'true' : false;
+      // Drafts are private: only the owner (or an admin) may include them.
+      const user = (req as AuthedRequest).user;
+      const canSeeDrafts = Boolean(user && (isAdmin(user) || user.id === ownerId));
       const { items, pagination } = store.listItems({
         q: typeof req.query.q === 'string' ? req.query.q : undefined,
         category: typeof req.query.category === 'string' ? req.query.category : undefined,
         location: typeof req.query.location === 'string' ? req.query.location : undefined,
-        ownerId: typeof req.query.ownerId === 'string' ? req.query.ownerId : undefined,
-        includeDrafts: typeof req.query.includeDrafts === 'string' ? req.query.includeDrafts === 'true' : undefined,
+        ownerId,
+        includeDrafts: wantsDrafts && canSeeDrafts,
         page,
         limit,
       });
@@ -66,8 +73,9 @@ export class ItemController {
   async createItem(req: Request, res: Response) {
     try {
       const body = createItemSchema.parse(req.body);
-      // TODO: auth middleware — ownerId comes from the verified JWT, never the body.
-      const item = store.createItem(body, 'u_devan');
+      // ownerId comes from the verified JWT, never the body.
+      const user = (req as AuthedRequest).user!;
+      const item = store.createItem(body, user.id);
       res.status(201).json({ message: 'Item created as draft', item });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -79,12 +87,19 @@ export class ItemController {
 
   async updateItem(req: Request, res: Response) {
     try {
-      // TODO: verify req.user owns this item before applying the update.
-      const body = updateItemSchema.parse(req.body);
-      const item = store.updateItem(paramId(req.params.id), body);
-      if (!item) {
+      const id = paramId(req.params.id);
+      const existing = store.findItem(id);
+      if (!existing) {
         return res.status(404).json({ error: 'Item not found' });
       }
+      const user = (req as AuthedRequest).user!;
+      if (existing.ownerId !== user.id && !isAdmin(user)) {
+        return res
+          .status(403)
+          .json({ error: { code: 'FORBIDDEN', message: 'You can only edit your own listings.' } });
+      }
+      const body = updateItemSchema.parse(req.body);
+      const item = store.updateItem(id, body);
       res.json({ message: 'Item updated successfully', item });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -95,11 +110,18 @@ export class ItemController {
   }
 
   async deleteItem(req: Request, res: Response) {
-    // TODO: only owner or admin may delete.
-    const deleted = store.deleteItem(paramId(req.params.id));
-    if (!deleted) {
+    const id = paramId(req.params.id);
+    const existing = store.findItem(id);
+    if (!existing) {
       return res.status(404).json({ error: 'Item not found' });
     }
+    const user = (req as AuthedRequest).user!;
+    if (existing.ownerId !== user.id && !isAdmin(user)) {
+      return res
+        .status(403)
+        .json({ error: { code: 'FORBIDDEN', message: 'You can only delete your own listings.' } });
+    }
+    store.deleteItem(id);
     res.json({ message: 'Item deleted successfully' });
   }
 

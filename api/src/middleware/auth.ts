@@ -64,3 +64,21 @@ export const requireAdmin: RequestHandler = (req, res, next) => {
   }
   next();
 };
+
+/**
+ * Attaches `req.user` when a valid bearer token is present, but never rejects.
+ * Use on public endpoints that reveal more to a signed-in caller (e.g. drafts).
+ */
+export const optionalAuth: RequestHandler = (req, _res, next) => {
+  const token = bearerToken(req);
+  if (token) {
+    const claims = verifyToken(token);
+    if (claims) {
+      const user = store.findUserById(claims.sub);
+      if (user) (req as AuthedRequest).user = user;
+    }
+  }
+  next();
+};
+
+export const isAdmin = (user: UserRecord): boolean => user.role === 'admin';
