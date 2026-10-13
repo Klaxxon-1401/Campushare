@@ -86,6 +86,9 @@ CampusRental/
 - Gated flow: `Welcome → Register → OTP → VerificationPending / Login → Main`.
 - Login accepts any non-empty email + password and enters the app as the seeded user.
 - Real authentication (JWT / campus-email verification) is the post-course task.
+- **Email service in place (backend):** `api/src/services/email.ts` is provider-agnostic — it uses
+  **Resend** when `RESEND_API_KEY` is set, otherwise it logs messages (including OTP codes) to the
+  server console so the flow works with zero setup. `npm run email:test` sends a live test.
 
 ### 4.2 Listings & discovery
 - Home feed with category chips, campus-verified banner, and header badges for messages + notifications.

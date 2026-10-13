@@ -8,6 +8,7 @@
     "start": "node dist/index.js",
     "dev": "nodemon --exec ts-node src/index.ts",
     "typecheck": "tsc --noEmit",
+    "email:test": "node scripts/send-test-email.mjs",
     "smoke": "npm run build && node scripts/smoke.mjs"
   },
   "keywords": [],
@@ -19,6 +20,7 @@
     "express-rate-limit": "^8.6.2",
     "helmet": "^8.3.0",
     "morgan": "^1.11.0",
+    "resend": "^6.32.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
