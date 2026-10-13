@@ -6,10 +6,11 @@ Single source of truth for what has been built, what is verified, and what remai
 Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 
 > **Where we left off:** every Week 6–12 feature is built, tested, and shipped in a freshly rebuilt
-> APK. Tuesday added **in-app notifications**, an **admin dashboard**, the full **Week 10–12
-> documentation package**, and **realistic rupee pricing (₹30/day minimum)**.
-> The only remaining plan item is a live 20–30 student beta/UAT (§11 / `docs/week-10/UAT_REPORT.md`).
-> All work is committed locally; **nothing has been pushed** (no remote).
+> APK. Recent sessions added **in-app notifications**, an **admin dashboard**, the **Week 10–12
+> documentation package**, **realistic rupee pricing (₹30/day minimum)**, and the **backend auth
+> system** (JWT + scrypt passwords + email OTP via Resend). Remaining: wire the app to the auth API,
+> verify a Resend sending domain, and run the live 20–30 student beta/UAT (§11). All work is
+> committed locally; **nothing has been pushed** (no remote).
 >
 > **2026-10-13 fix — Home category-filter row clipped its chips:** a horizontal `ScrollView` keeps
 > `flexShrink: 1` by default, so the row shrank below its content height and clipped the pills (a
@@ -29,13 +30,15 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 | API | Express + TypeScript, 11 files, in-memory store |
 | Mobile unit tests | 17 / 17 passing |
 | API smoke tests | 19 / 19 passing |
+| API auth smoke | 19 / 19 passing |
+| API auth | JWT · scrypt passwords · email OTP via Resend |
 | TypeScript | Clean (`tsc --noEmit`) |
 | Android JS bundle | Builds (Hermes) |
 | Android APK | Rebuilt 2026-10-13 — `com.campusshare.app` v1.0.0, verified |
 | Currency | Rupees (INR, `₹`) app-wide |
 | Listing pricing | **₹30/day minimum** (seeded ₹30–₹250); enforced in create/edit |
 | Emojis in UI | None — Feather icon set only |
-| Auth / real backend | Not yet (post-course phase) |
+| Auth / real backend | Backend auth built (API); mobile app not yet wired |
 
 ---
 
@@ -81,14 +84,19 @@ CampusRental/
 
 ## 4. Feature inventory (what works)
 
-### 4.1 Auth screens (UI only — no real backend yet)
-- Welcome, Register, OTP, Login, Verification-pending (`src/screens/Auth/*`).
-- Gated flow: `Welcome → Register → OTP → VerificationPending / Login → Main`.
-- Login accepts any non-empty email + password and enters the app as the seeded user.
-- Real authentication (JWT / campus-email verification) is the post-course task.
-- **Email service in place (backend):** `api/src/services/email.ts` is provider-agnostic — it uses
-  **Resend** when `RESEND_API_KEY` is set, otherwise it logs messages (including OTP codes) to the
-  server console so the flow works with zero setup. `npm run email:test` sends a live test.
+### 4.1 Auth
+- **Backend auth — built** (`api/src`): `POST /v1/auth/{register,login,verify/start,verify/confirm}`
+  and `GET /v1/auth/me`. Campus-domain allowlist; scrypt password hashing; 6-digit email OTP
+  (stored hashed, 10-min expiry, 60s resend cooldown, 5-attempt limit); signed JWTs carrying
+  `sub / email / role / verificationStatus`. `requireAuth` / `requireVerified` / `requireAdmin`
+  middleware resolve the bearer token to a verified user. In dev the OTP is also returned as
+  `devCode` so the flow is testable without an inbox.
+- **Email service:** `api/src/services/email.ts` — provider-agnostic; uses **Resend** when
+  `RESEND_API_KEY` is set, otherwise logs messages to the server console (zero-setup dev).
+  `npm run email:test` sends a live test; `npm run auth:smoke` covers the full auth flow.
+- **Mobile screens (UI):** Welcome, Register, OTP, Login, Verification-pending
+  (`src/screens/Auth/*`); gated flow `Welcome → Register → OTP → VerificationPending / Login → Main`.
+  Still backed by the local store — wiring the app to the API is the next step.
 
 ### 4.2 Listings & discovery
 - Home feed with category chips, campus-verified banner, and header badges for messages + notifications.
@@ -197,12 +205,16 @@ Notifications: Notifications · Admin: Admin · Profile: Profile
 | Mobile unit tests | `cd mobile && node scripts/unit-test.mjs` | 17 / 17 |
 | Android bundle | `cd mobile && npx expo export --platform android` | Builds (Hermes) |
 | API smoke | `cd api && npm run smoke` | 19 / 19 |
+| API auth smoke | `cd api && npm run auth:smoke` | 19 / 19 |
 
 Unit tests cover date math (`daysInclusive`, `eachDay`, `overlaps`, `addDays`, `todayISO`,
 `timeAgo`), pricing (`computePrice`, the **₹30/day floor**), and formatting (`formatMoney` → `₹`,
 `initials`).
 API smoke covers items/search/pagination, availability, the full booking lifecycle,
 409 double-booking, illegal transitions, past-date rejection, and validation.
+API auth smoke covers campus-domain + password validation, register, duplicate email, unverified
+login block, OTP resend cooldown, wrong/expired code, successful verification, JWT issuance,
+`/me` with/without a token, wrong password, and seeded-user login.
 
 Acceptance testing and the security pass are documented in
 [`docs/week-10/UAT_REPORT.md`](docs/week-10/UAT_REPORT.md) and
@@ -269,15 +281,19 @@ unset ANDROID_SDK_ROOT
 
 ## 11. Next steps (post-course)
 
-1. Expo Auth (JWT) protecting `ownerId` / `borrowerId`.
-2. Firestore backend replacing `localStore` (contract already mirrored in `api.ts`).
-3. Stripe Connect for real payments and deposit holds.
-4. Upload condition photos to Firebase Storage (model already in place).
-5. Push notifications for chat and booking updates (the in-app **notification feed** is already
+1. **Wire the mobile app to the auth API** — swap the local-store login for real
+   `register / login / verify / me` calls, store the JWT (expo-secure-store), send it as a bearer
+   token, and guard `ownerId` / `borrowerId` on items & bookings with `requireAuth` / `requireVerified`.
+2. **Verify a sending domain in Resend** — until then `onboarding@resend.dev` only delivers to the
+   account email, so real OTPs to student addresses won't send (the API degrades gracefully meanwhile).
+3. Firestore backend replacing `localStore` (contract already mirrored in `api.ts`).
+4. Stripe Connect for real payments and deposit holds.
+5. Upload condition photos to Firebase Storage (model already in place).
+6. Push notifications for chat and booking updates (the in-app **notification feed** is already
    built client-side; the push transport is the remaining piece).
-6. Sync the API seed data + price validation with the ₹30/day floor (the backend was intentionally
-   left untouched this session — the app enforces the floor, the API does not yet).
-7. Live 20–30 student beta + UAT metrics (script ready in `docs/week-10/UAT_REPORT.md`).
+7. Sync the API seed data + price validation with the ₹30/day floor (the backend was intentionally
+   left untouched — the app enforces the floor, the API does not yet).
+8. Live 20–30 student beta + UAT metrics (script ready in `docs/week-10/UAT_REPORT.md`).
 
 ---
 

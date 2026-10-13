@@ -63,3 +63,38 @@ export interface Paginated<T> {
   items: T[];
   pagination: { page: number; limit: number; total: number; pages: number };
 }
+
+// ---------------------------------------------------------------------------
+// Auth (PROJECT_PLAN §11.1). Wire contract mirrored in the mobile app.
+// ---------------------------------------------------------------------------
+
+export type UserRole = 'student' | 'admin';
+export type VerificationStatus = 'draft' | 'pending' | 'verified' | 'rejected';
+
+/** Public user shape returned to clients — never contains credentials. */
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  studentId?: string;
+  role: UserRole;
+  verificationStatus: VerificationStatus;
+  rating: number;
+  reviewCount: number;
+  createdAt: string;
+}
+
+/** Internal record. `passwordHash` must never be returned to a client. */
+export interface UserRecord extends User {
+  passwordHash: string;
+}
+
+/** JWT claims (docs/week-03/api-contract-v1.md §1). */
+export interface JwtClaims {
+  sub: string;
+  email: string;
+  role: UserRole;
+  verificationStatus: VerificationStatus;
+  iat?: number;
+  exp?: number;
+}

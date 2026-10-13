@@ -9,6 +9,7 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "typecheck": "tsc --noEmit",
     "email:test": "node scripts/send-test-email.mjs",
+    "auth:smoke": "npm run build && node scripts/auth-smoke.mjs",
     "smoke": "npm run build && node scripts/smoke.mjs"
   },
   "keywords": [],
@@ -19,6 +20,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.2",
     "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
     "morgan": "^1.11.0",
     "resend": "^6.32.1",
     "zod": "^4.4.3"
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^26.2.0",
     "nodemon": "^3.1.14",

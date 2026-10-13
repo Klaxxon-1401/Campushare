@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -12,6 +11,7 @@ dotenv.config();
 import authRoutes from './routes/auth';
 import itemRoutes from './routes/items';
 import bookingRoutes from './routes/bookings';
+import { globalLimiter } from './middleware/rateLimit';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -38,22 +38,6 @@ const corsOptions: cors.CorsOptions = {
   credentials: true,
 };
 
-// Rate limiters
-const globalLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 120,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: { code: 'RATE_LIMITED', message: 'Too many attempts. Try again later.' } },
-});
-
 // Middleware
 app.use(helmet()); // Security headers
 app.use(cors(corsOptions)); // Restrict to known origins
@@ -70,7 +54,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use('/v1/auth', authLimiter, authRoutes); // Strict limits on credential endpoints
+app.use('/v1/auth', authRoutes); // Per-route limiters live in routes/auth.ts
 app.use('/v1/items', itemRoutes);
 app.use('/v1/bookings', bookingRoutes);
 

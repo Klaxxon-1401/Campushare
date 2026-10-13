@@ -1,5 +1,6 @@
-import { AvailabilityDay, Booking, BookingStatus, Item, ItemCategory, ItemStatus } from '../types';
+import { AvailabilityDay, Booking, BookingStatus, Item, ItemCategory, ItemStatus, User, UserRecord, UserRole, VerificationStatus } from '../types';
 import { addDays, daysInclusive, eachDay, overlaps, todayISO } from '../utils/date';
+import { hashPasswordSync } from '../services/passwords';
 
 // In-memory persistence layer. Replaced by Firestore at the End-of-Week-6
 // integration step (PROJECT_PLAN §9). State intentionally lives in this module
@@ -17,18 +18,23 @@ export interface SeedUser {
   role: 'student' | 'admin';
   rating: number;
   reviewCount: number;
+  email: string;
+  studentId?: string;
 }
 
 export const SEED_USERS: SeedUser[] = [
-  { id: 'u_dev', name: 'Devan D', role: 'student', rating: 4.9, reviewCount: 12 },
-  { id: 'u_avisar', name: 'Avisar Anand', role: 'student', rating: 4.8, reviewCount: 9 },
-  { id: 'u_anmol', name: 'Anmol Kumar', role: 'student', rating: 4.7, reviewCount: 6 },
-  { id: 'u_sarah', name: 'Sarah M.', role: 'student', rating: 4.9, reviewCount: 21 },
-  { id: 'u_mike', name: 'Mike R.', role: 'student', rating: 4.6, reviewCount: 14 },
-  { id: 'u_lisa', name: 'Lisa K.', role: 'student', rating: 4.5, reviewCount: 8 },
-  { id: 'u_priya', name: 'Priya S.', role: 'student', rating: 4.8, reviewCount: 11 },
-  { id: 'u_admin', name: 'Campus Admin', role: 'admin', rating: 5, reviewCount: 0 },
+  { id: 'u_dev', name: 'Devan D', role: 'student', rating: 4.9, reviewCount: 12, email: 'devan.d@student.university.edu', studentId: '22CS1043' },
+  { id: 'u_avisar', name: 'Avisar Anand', role: 'student', rating: 4.8, reviewCount: 9, email: 'avisar.a@student.university.edu', studentId: '22CS1102' },
+  { id: 'u_anmol', name: 'Anmol Kumar', role: 'student', rating: 4.7, reviewCount: 6, email: 'anmol.k@student.university.edu', studentId: '22EC2087' },
+  { id: 'u_sarah', name: 'Sarah M.', role: 'student', rating: 4.9, reviewCount: 21, email: 'sarah.m@student.university.edu', studentId: '21CH3005' },
+  { id: 'u_mike', name: 'Mike R.', role: 'student', rating: 4.6, reviewCount: 14, email: 'mike.r@student.university.edu', studentId: '23ME1188' },
+  { id: 'u_lisa', name: 'Lisa K.', role: 'student', rating: 4.5, reviewCount: 8, email: 'lisa.k@student.university.edu', studentId: '23BT4021' },
+  { id: 'u_priya', name: 'Priya S.', role: 'student', rating: 4.8, reviewCount: 11, email: 'priya.s@student.university.edu', studentId: '21CS2090' },
+  { id: 'u_admin', name: 'Campus Admin', role: 'admin', rating: 5, reviewCount: 0, email: 'admin@university.edu' },
 ];
+
+/** Password shared by all seeded demo accounts. Documented for local testing. */
+export const SEED_PASSWORD = 'campus1234';
 
 interface SeedDef {
   id: string;
@@ -109,6 +115,24 @@ let items: StoredItem[] = SEED_ITEMS.map((s) => {
 
 let bookings: Booking[] = [];
 const blockedDates = new Map<string, Set<string>>();
+
+// Seeded accounts are pre-verified so the app can log in immediately.
+const seedPasswordHash = hashPasswordSync(SEED_PASSWORD);
+const seedUserRecords = (): UserRecord[] =>
+  SEED_USERS.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    studentId: u.studentId,
+    role: u.role,
+    verificationStatus: 'verified' as VerificationStatus,
+    rating: u.rating,
+    reviewCount: u.reviewCount,
+    createdAt: nowISO(),
+    passwordHash: seedPasswordHash,
+  }));
+
+let users: UserRecord[] = seedUserRecords();
 
 const userOf = (id: string) => SEED_USERS.find((u) => u.id === id);
 
@@ -271,6 +295,66 @@ export const store = {
     bookings = [...bookings.slice(0, idx), updated, ...bookings.slice(idx + 1)];
     return updated;
   },
+
+  // --- Users / auth (PROJECT_PLAN §11.1) ---
+
+  findUserById(id: string): UserRecord | undefined {
+    return users.find((u) => u.id === id);
+  },
+
+  findUserByEmail(email: string): UserRecord | undefined {
+    const target = email.trim().toLowerCase();
+    return users.find((u) => u.email.toLowerCase() === target);
+  },
+
+  createUser(input: {
+    name: string;
+    email: string;
+    studentId?: string;
+    passwordHash: string;
+    role?: UserRole;
+    verificationStatus?: VerificationStatus;
+  }): UserRecord {
+    const record: UserRecord = {
+      id: nextId('u'),
+      name: input.name,
+      email: input.email.trim().toLowerCase(),
+      studentId: input.studentId,
+      role: input.role ?? 'student',
+      verificationStatus: input.verificationStatus ?? 'pending',
+      rating: 0,
+      reviewCount: 0,
+      createdAt: nowISO(),
+      passwordHash: input.passwordHash,
+    };
+    users = [record, ...users];
+    return record;
+  },
+
+  updateUser(
+    id: string,
+    patch: Partial<Omit<UserRecord, 'id' | 'passwordHash'>> & { passwordHash?: string }
+  ): UserRecord | undefined {
+    const idx = users.findIndex((u) => u.id === id);
+    if (idx === -1) return undefined;
+    const updated: UserRecord = { ...users[idx], ...patch };
+    users = [...users.slice(0, idx), updated, ...users.slice(idx + 1)];
+    return updated;
+  },
+
+  setUserVerification(id: string, status: VerificationStatus): UserRecord | undefined {
+    const idx = users.findIndex((u) => u.id === id);
+    if (idx === -1) return undefined;
+    const updated: UserRecord = { ...users[idx], verificationStatus: status };
+    users = [...users.slice(0, idx), updated, ...users.slice(idx + 1)];
+    return updated;
+  },
+};
+
+/** Strips credentials so a UserRecord can be sent over the wire. */
+export const toPublicUser = (record: UserRecord): User => {
+  const { passwordHash: _passwordHash, ...publicUser } = record;
+  return publicUser;
 };
 
 /** Test/development helper. */
@@ -284,6 +368,7 @@ export const __resetStore = (): void => {
   });
   bookings = [];
   blockedDates.clear();
+  users = seedUserRecords();
   idCounter = 5000;
 };
 
