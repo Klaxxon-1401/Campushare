@@ -1,6 +1,6 @@
 # CampusShare — Progress Tracker
 
-_Last updated: 2026-10-14 · Status: feature-complete through Week 12; APK rebuilt; **email OTP verified working** (multi-key Resend, `onboarding@resend.dev` sender); pushed to GitHub_
+_Last updated: 2026-10-14 · Status: feature-complete through Week 12; APK rebuilt; **email OTP verified working** (multi-key Resend, `onboarding@resend.dev` sender); **items & bookings wired to protected API**; pushed to GitHub_
 
 Single source of truth for what has been built, what is verified, and what remains.
 Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
@@ -12,8 +12,10 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 > expo-secure-store), with items & bookings now **authorized server-side**. **Email OTP works:**
 > multi-key Resend with `onboarding@resend.dev` sender delivers to both
 > `devanduraipragash@gmail.com` (fallback key) and `25cu0310065@student.hindustanuniv.ac.in`
-> (dedicated key). Remaining: verify a custom domain for arbitrary student emails, and run the
-> live 20–30 student beta/UAT (§11). All work is committed locally and **pushed to GitHub**.
+> (dedicated key). **Items & bookings screens now call the protected API** (`networkApi.ts` +
+> hybrid `api.ts`). Remaining: verify a custom domain for arbitrary student emails, move payments/
+> evidence/reviews/disputes/messages/notifications to the API, and run the live 20–30 student
+> beta/UAT (§11). All work is committed locally and **pushed to GitHub**.
 >
 > **2026-10-13 fix — Home category-filter row clipped its chips:** a horizontal `ScrollView` keeps
 > `flexShrink: 1` by default, so the row shrank below its content height and clipped the pills (a
@@ -284,15 +286,14 @@ unset ANDROID_SDK_ROOT
 
 ## 10. Known limitations
 
-1. **No auth** — `CURRENT_USER` is hardcoded (`u_devan`); API stubs ids too.
-2. **Mock payments** — UPI/card/wallet succeed instantly; no Stripe yet.
-3. **In-memory / client-side data** — state resets on restart; `localStore` is the seed of truth.
-4. **Camera on emulator** — `expo-image-picker` needs a device/emulator camera; falls back to
+1. **Mock payments** — UPI/card/wallet succeed instantly; no Stripe yet.
+2. **In-memory / client-side data for payments, evidence, reviews, disputes, messages, notifications, admin** — state resets on restart; `localStore` is the seed of truth. Items & bookings now use the network API.
+3. **Camera on emulator** — `expo-image-picker` needs a device/emulator camera; falls back to
    the photo library.
-5. **APK signing** — debug keystore; use EAS for a distributable release build.
-6. **Admin console is a demo** — verification/dispute actions are client-side and session-only;
+4. **APK signing** — debug keystore; use EAS for a distributable release build.
+5. **Admin console is a demo** — verification/dispute actions are client-side and session-only;
    server-side role enforcement lands with the auth milestone.
-7. **Resend email delivery constraint** — only `onboarding@resend.dev` works as the sender
+6. **Resend email delivery constraint** — only `onboarding@resend.dev` works as the sender
    (delivers to the Resend account owner). Custom `from` addresses require domain verification
    in Resend dashboard (SPF/DKIM/DMARC). Current config uses `onboarding@resend.dev` for both
    `gmail.com` (fallback key) and `student.hindustanuniv.ac.in` (dedicated key) — OTPs reach
@@ -306,8 +307,8 @@ unset ANDROID_SDK_ROOT
    key) and `25cu0310065@student.hindustanuniv.ac.in` (dedicated key) receive OTPs because they're
    the Resend account owners. To send to arbitrary students: verify a custom domain in Resend
    (SPF/DKIM/DMARC) and update `RESEND_API_KEYS` `from` addresses.
-2. **Point the app's item/booking screens at the API** — they still read from `localStore`; swap them
-   for the (now protected) `/items` and `/bookings` endpoints and send the bearer token.
+2. **Items & bookings now wired to protected API** — `networkApi.ts` calls `/v1/items` and `/v1/bookings`
+   with JWT bearer token; `api.ts` is a hybrid (network for items/bookings, localStore for rest).
 3. Firestore backend replacing `localStore` (contract already mirrored in `api.ts`).
 4. Stripe Connect for real payments and deposit holds.
 5. Upload condition photos to Firebase Storage (model already in place).
