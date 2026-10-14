@@ -379,6 +379,8 @@ export const __resetStore = (): void => {
   const ephemeralEmails = [
     'devanduraipragash@gmail.com',
     '25cu0310065@student.hindustanuniv.ac.in',
+    '25cu0310103@student.hindustanuniv.ac.in',
+    '25cu0310089@student.hindustanuniv.ac.in',
   ];
   for (const email of ephemeralEmails) {
     const idx = users.findIndex((u) => u.email === email);
