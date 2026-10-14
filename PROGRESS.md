@@ -1,6 +1,6 @@
 # CampusShare — Progress Tracker
 
-_Last updated: 2026-10-13 · Status: feature-complete through Week 12; APK rebuilt with notifications, admin dashboard, ₹30/day pricing, and the category-filter layout fix_
+_Last updated: 2026-10-14 · Status: feature-complete through Week 12; APK rebuilt; **email OTP verified working** (multi-key Resend, `onboarding@resend.dev` sender); pushed to GitHub_
 
 Single source of truth for what has been built, what is verified, and what remains.
 Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
@@ -9,9 +9,11 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 > APK. Recent sessions added **in-app notifications**, an **admin dashboard**, the **Week 10–12
 > documentation package**, **realistic rupee pricing (₹30/day minimum)**, and a **real auth system**
 > — JWT + scrypt passwords + email OTP on the API, **wired into the app** (token in
-> expo-secure-store), with items & bookings now **authorized server-side**. Remaining: verify a
-> Resend sending domain and run the live 20–30 student beta/UAT (§11). All work is committed
-> locally; **nothing has been pushed** (no remote).
+> expo-secure-store), with items & bookings now **authorized server-side**. **Email OTP works:**
+> multi-key Resend with `onboarding@resend.dev` sender delivers to both
+> `devanduraipragash@gmail.com` (fallback key) and `25cu0310065@student.hindustanuniv.ac.in`
+> (dedicated key). Remaining: verify a custom domain for arbitrary student emails, and run the
+> live 20–30 student beta/UAT (§11). All work is committed locally and **pushed to GitHub**.
 >
 > **2026-10-13 fix — Home category-filter row clipped its chips:** a horizontal `ScrollView` keeps
 > `flexShrink: 1` by default, so the row shrank below its content height and clipped the pills (a
@@ -32,14 +34,14 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 | Mobile unit tests | 17 / 17 passing |
 | API smoke tests | 38 / 38 passing |
 | API auth smoke | 19 / 19 passing |
-| API auth | JWT · scrypt passwords · email OTP via Resend |
+| API auth | JWT · scrypt passwords · email OTP via Resend (**`onboarding@resend.dev` sender — OTPs deliver to account owners**) |
 | TypeScript | Clean (`tsc --noEmit`) |
 | Android JS bundle | Builds (Hermes) |
 | Android APK | Rebuilt 2026-10-13 — `com.campusshare.app` v1.0.0, verified |
 | Currency | Rupees (INR, `₹`) app-wide |
 | Listing pricing | **₹30/day minimum** (seeded ₹30–₹250); enforced in create/edit |
 | Emojis in UI | None — Feather icon set only |
-| Auth / real backend | Wired: app ⇄ API, JWT in expo-secure-store |
+| Auth / real backend | Wired: app ⇄ API, JWT in expo-secure-store **| GitHub: pushed** |
 
 ---
 
@@ -97,9 +99,12 @@ CampusRental/
   edit/delete and booking accept/decline/confirm-return are owner-only; pay/return are
   borrower-only; pickup and cancel are borrower-or-lender; reads are participant-or-admin. Draft
   listings are private to their owner. Denied access returns `403 FORBIDDEN`.
-- **Email service:** `api/src/services/email.ts` — provider-agnostic; uses **Resend** when
-  `RESEND_API_KEY` is set, otherwise logs messages to the server console (zero-setup dev).
-  `npm run email:test` sends a live test; `npm run auth:smoke` covers the full auth flow.
+- **Email service:** `api/src/services/email.ts` — provider-agnostic; **multi-key Resend** with
+  `RESEND_API_KEYS` JSON (`gmail.com` via fallback key, `student.hindustanuniv.ac.in` via dedicated
+  key). **Both use `onboarding@resend.dev` as sender** — delivers to the Resend account owners
+  (tested: `devanduraipragash@gmail.com` and `25cu0310065@student.hindustanuniv.ac.in` receive
+  OTPs). Zero-setup dev via log driver (`setForceLogDriver(true)`). `npm run email:test` sends a
+  live test; `npm run auth:smoke` covers the full auth flow.
 - **Mobile app — wired:** the Auth screens call the API through `AuthContext`
   (`register → OTP → verify`, `login`, `me`); the JWT is kept in **expo-secure-store**
   (AsyncStorage fallback) and re-attached as a bearer token on launch. The navigator starts on
@@ -287,13 +292,20 @@ unset ANDROID_SDK_ROOT
 5. **APK signing** — debug keystore; use EAS for a distributable release build.
 6. **Admin console is a demo** — verification/dispute actions are client-side and session-only;
    server-side role enforcement lands with the auth milestone.
+7. **Resend email delivery constraint** — only `onboarding@resend.dev` works as the sender
+   (delivers to the Resend account owner). Custom `from` addresses require domain verification
+   in Resend dashboard (SPF/DKIM/DMARC). Current config uses `onboarding@resend.dev` for both
+   `gmail.com` (fallback key) and `student.hindustanuniv.ac.in` (dedicated key) — OTPs reach
+   those inboxes because they're the account owners.
 
 ---
 
 ## 11. Next steps (post-course)
 
-1. **Verify a sending domain in Resend** — until then `onboarding@resend.dev` only delivers to the
-   account email, so real OTPs to student addresses won't send (the API degrades gracefully meanwhile).
+1. **Email works now via `onboarding@resend.dev`** — both `devanduraipragash@gmail.com` (fallback
+   key) and `25cu0310065@student.hindustanuniv.ac.in` (dedicated key) receive OTPs because they're
+   the Resend account owners. To send to arbitrary students: verify a custom domain in Resend
+   (SPF/DKIM/DMARC) and update `RESEND_API_KEYS` `from` addresses.
 2. **Point the app's item/booking screens at the API** — they still read from `localStore`; swap them
    for the (now protected) `/items` and `/bookings` endpoints and send the bearer token.
 3. Firestore backend replacing `localStore` (contract already mirrored in `api.ts`).
