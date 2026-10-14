@@ -124,7 +124,7 @@ class ResendEmailService implements EmailService {
 }
 
 /**
- * Multi-key Resend driver — selects API key based on recipient domain.
+ * Multi-key Resend driver — selects API key based on recipient email (exact match first, then domain).
  */
 class MultiResendEmailService implements EmailService {
   readonly driver = 'multi-resend' as const;
@@ -133,8 +133,8 @@ class MultiResendEmailService implements EmailService {
 
   constructor() {
     const keyMap = parseResendKeys();
-    for (const [domain, config] of keyMap) {
-      this.clients.set(domain, {
+    for (const [key, config] of keyMap) {
+      this.clients.set(key.trim().toLowerCase(), {
         client: new Resend(config.apiKey),
         from: config.from,
       });
@@ -150,13 +150,20 @@ class MultiResendEmailService implements EmailService {
 
   private getClientForEmail(to: string | string[]): { client: Resend; from: string } | null {
     const recipients = Array.isArray(to) ? to : [to];
-    // Use the first recipient's domain to pick the client
     const first = recipients[0]?.toLowerCase();
     if (!first) return this.defaultClient;
+
+    // 1. Try exact email match first (for per-account keys like 25cu0310103@domain)
+    if (this.clients.has(first)) {
+      return this.clients.get(first)!;
+    }
+
+    // 2. Fall back to domain match
     const domain = first.split('@')[1];
     if (domain && this.clients.has(domain)) {
       return this.clients.get(domain)!;
     }
+
     return this.defaultClient;
   }
 
