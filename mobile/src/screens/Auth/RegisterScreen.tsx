@@ -60,7 +60,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
     setLoading(true);
     try {
       const result = await signUp({ email, studentId, password });
-      navigation.navigate('OTP', { email: result.email, devCode: result.devCode });
+      navigation.navigate('OTP', { email: result.email });
     } catch (e) {
       const err = e as ApiError;
       setError(err.message || 'Registration failed. Please try again.');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  TextInputKeyPressEvent,
 } from 'react-native';
 import { colors, typography, spacing, borders } from '../../theme';
 import { Feather } from '@expo/vector-icons';
@@ -19,14 +20,52 @@ interface OTPScreenProps {
   route: any;
 }
 
+interface OTPInputProps {
+  index: number;
+  value: string;
+  onChangeText: (value: string) => void;
+  onKeyPress: (event: TextInputKeyPressEvent) => void;
+  autoFocus?: boolean;
+}
+
+const OTPInput = forwardRef<TextInput, OTPInputProps>(
+  (
+    { index, value, onChangeText, onKeyPress, autoFocus },
+    ref
+  ) => {
+    return (
+      <TextInput
+        ref={ref}
+        style={[
+          styles.otpInput,
+          value && styles.otpInputFilled,
+        ]}
+        value={value}
+        onChangeText={onChangeText}
+        onKeyPress={onKeyPress}
+        keyboardType="number-pad"
+        maxLength={1}
+        selectTextOnFocus
+        autoFocus={autoFocus ?? false}
+        autoComplete="one-time-code"
+        textContentType="oneTimeCode"
+      />
+    );
+  }
+);
+
+OTPInput.displayName = 'OTPInput';
+
 export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
-  const { email, devCode } = route.params;
+  const { email } = route.params;
   const { verifyOtp, resendOtp } = useAuth();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(900); // 15 minutes in seconds
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+
+  const inputRefs = useRef<Array<TextInput | null>>([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -49,7 +88,25 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
 
     // Auto-focus next input
     if (value && index < 5) {
-      // Focus next input (would need refs for actual implementation)
+      inputRefs.current[index + 1]?.focus?.();
+    }
+  };
+
+  const handleKeyPress = (index: number, event: TextInputKeyPressEvent) => {
+    const key = event.nativeEvent.key;
+    // Handle backspace to go to previous input
+    if (key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus?.();
+    }
+  };
+
+  const handlePaste = (text: string) => {
+    const digits = text.replace(/\D/g, '').slice(0, 6);
+    if (digits.length === 6) {
+      const newOtp = digits.split('');
+      setOtp(newOtp);
+      // Focus the last input after paste
+      inputRefs.current[5]?.focus?.();
     }
   };
 
@@ -80,7 +137,7 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
     try {
       const result = await resendOtp(email);
       setTimer(900);
-      setNotice(result.devCode ? `New code sent (dev code: ${result.devCode})` : 'A new code is on its way.');
+      setNotice('A new code is on its way.');
     } catch (e) {
       const err = e as ApiError;
       setError(err.message || 'Could not resend the code. Please try again.');
@@ -117,23 +174,17 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
         {/* OTP Input */}
         <View style={styles.otpContainer}>
           {otp.map((digit, index) => (
-            <TextInput
+            <OTPInput
               key={index}
-              style={[
-                styles.otpInput,
-                digit && styles.otpInputFilled,
-              ]}
+              ref={(el) => { inputRefs.current[index] = el; }}
+              index={index}
               value={digit}
               onChangeText={(value) => handleOTPChange(index, value)}
-              keyboardType="number-pad"
-              maxLength={1}
-              selectTextOnFocus
+              onKeyPress={(event) => handleKeyPress(index, event)}
+              autoFocus={index === 0}
             />
           ))}
         </View>
-
-        {/* Dev hint — the API returns the OTP outside production */}
-        {devCode ? <Text style={styles.devHint}>Dev code: {devCode}</Text> : null}
 
         {/* Timer */}
         <Text style={styles.timer}>
@@ -172,12 +223,6 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  devHint: {
-    marginTop: spacing[4],
-    fontFamily: typography.fonts.bodyBold,
-    fontSize: typography.sizes.body,
-    color: colors.primary.main,
-  },
   messageRow: {
     flexDirection: 'row',
     alignItems: 'center',

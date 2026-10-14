@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 /**
  * Email delivery for CampusShare.
  *
+ * Supports multiple Resend API keys mapped to recipient domains.
  * The driver is chosen at runtime:
  *  - `resend` — real delivery, used when a genuine RESEND_API_KEY is set.
  *  - `log`    — dev fallback that prints the message (incl. OTP codes) to the
@@ -28,12 +29,42 @@ export interface SendResult {
 
 export interface EmailService {
   /** Driver name, for logs and diagnostics. */
-  readonly driver: 'resend' | 'log';
+  readonly driver: 'resend' | 'log' | 'multi-resend';
   send(message: EmailMessage): Promise<SendResult>;
 }
 
-/** Sender identity. Set EMAIL_FROM once a domain is verified in Resend. */
-const FROM = process.env.EMAIL_FROM || 'CampusShare <onboarding@resend.dev>';
+interface ResendAccountConfig {
+  apiKey: string;
+  from: string;
+}
+
+/** Parse RESEND_API_KEYS env as JSON: { "domain.com": { "apiKey": "...", "from": "Name <email@domain.com>" } } */
+const parseResendKeys = (): Map<string, ResendAccountConfig> => {
+  const raw = process.env.RESEND_API_KEYS?.trim();
+  if (!raw) return new Map();
+  try {
+    const parsed = JSON.parse(raw);
+    const map = new Map<string, ResendAccountConfig>();
+    for (const [domain, config] of Object.entries(parsed)) {
+      if (config && typeof config === 'object' && 'apiKey' in config && typeof config.apiKey === 'string') {
+        const cfg = config as ResendAccountConfig;
+        if (cfg.apiKey && !/^re_x{6,}$/.test(cfg.apiKey)) {
+          map.set(domain.trim().toLowerCase(), {
+            apiKey: cfg.apiKey,
+            from: cfg.from || process.env.EMAIL_FROM || 'CampusShare <onboarding@resend.dev>',
+          });
+        }
+      }
+    }
+    return map;
+  } catch {
+    console.error('[email] Failed to parse RESEND_API_KEYS JSON');
+    return new Map();
+  }
+};
+
+/** Default sender identity. */
+const DEFAULT_FROM = process.env.EMAIL_FROM || 'CampusShare <onboarding@resend.dev>';
 
 /** Resend's docs placeholder — treat it as "not configured" so we don't try to send. */
 const PLACEHOLDER_KEY = /^re_x{6,}$/;
@@ -48,17 +79,25 @@ export const hasResendKey = (): boolean => {
 };
 
 /** The driver that will be used with the current environment. */
-export const emailDriver = (): EmailService['driver'] => (hasResendKey() ? 'resend' : 'log');
+export const emailDriver = (): EmailService['driver'] => {
+  // Multi-key config takes priority over single fallback key
+  if (parseResendKeys().size > 0) return 'multi-resend';
+  if (hasResendKey()) return 'resend';
+  return 'log';
+};
+
+/** Test helper: force log driver for local testing. */
+let forceLogDriver = false;
+export const setForceLogDriver = (enabled: boolean): void => {
+  forceLogDriver = enabled;
+};
+export const isForceLogDriver = (): boolean => forceLogDriver;
 
 const stripHtml = (html: string): string =>
   html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
 /**
- * Resend driver — real delivery.
- *
- * NOTE: with the default `onboarding@resend.dev` sender, Resend will only
- * deliver to the address the Resend account was created with. Verify a domain
- * and set EMAIL_FROM to send to anyone else.
+ * Single Resend driver — uses the default RESEND_API_KEY.
  */
 class ResendEmailService implements EmailService {
   readonly driver = 'resend' as const;
@@ -70,14 +109,72 @@ class ResendEmailService implements EmailService {
 
   async send(message: EmailMessage): Promise<SendResult> {
     const { data, error } = await this.client.emails.send({
-      from: FROM,
+      from: DEFAULT_FROM,
       to: message.to,
       subject: message.subject,
       html: message.html,
       text: message.text,
     });
 
-    // Resend returns errors in the payload instead of throwing — check it.
+    if (error) {
+      throw new Error(`Resend rejected the email (${error.name}): ${error.message}`);
+    }
+    return { id: data?.id };
+  }
+}
+
+/**
+ * Multi-key Resend driver — selects API key based on recipient domain.
+ */
+class MultiResendEmailService implements EmailService {
+  readonly driver = 'multi-resend' as const;
+  private readonly clients: Map<string, { client: Resend; from: string }> = new Map();
+  private readonly defaultClient: { client: Resend; from: string } | null = null;
+
+  constructor() {
+    const keyMap = parseResendKeys();
+    for (const [domain, config] of keyMap) {
+      this.clients.set(domain, {
+        client: new Resend(config.apiKey),
+        from: config.from,
+      });
+    }
+    // Fallback to default key if available
+    if (hasResendKey()) {
+      this.defaultClient = {
+        client: new Resend(process.env.RESEND_API_KEY as string),
+        from: DEFAULT_FROM,
+      };
+    }
+  }
+
+  private getClientForEmail(to: string | string[]): { client: Resend; from: string } | null {
+    const recipients = Array.isArray(to) ? to : [to];
+    // Use the first recipient's domain to pick the client
+    const first = recipients[0]?.toLowerCase();
+    if (!first) return this.defaultClient;
+    const domain = first.split('@')[1];
+    if (domain && this.clients.has(domain)) {
+      return this.clients.get(domain)!;
+    }
+    return this.defaultClient;
+  }
+
+  async send(message: EmailMessage): Promise<SendResult> {
+    const clientInfo = this.getClientForEmail(message.to);
+    if (!clientInfo) {
+      // No key configured for this domain and no fallback — throw to trigger log fallback upstream
+      throw new Error(`No Resend API key configured for recipient domain`);
+    }
+
+    const { data, error } = await clientInfo.client.emails.send({
+      from: clientInfo.from,
+      to: message.to,
+      subject: message.subject,
+      html: message.html,
+      text: message.text,
+    });
+
     if (error) {
       throw new Error(`Resend rejected the email (${error.name}): ${error.message}`);
     }
@@ -99,10 +196,21 @@ class LogEmailService implements EmailService {
 
 let cached: EmailService | null = null;
 
-/** Returns the configured email driver (Resend when a real key is present). */
+/** Returns the configured email driver (multi-resend > resend > log). */
 export const getEmailService = (): EmailService => {
   if (cached) return cached;
-  cached = hasResendKey() ? new ResendEmailService(process.env.RESEND_API_KEY as string) : new LogEmailService();
+  if (isForceLogDriver()) {
+    cached = new LogEmailService();
+    return cached;
+  }
+  const keyMap = parseResendKeys();
+  if (keyMap.size > 0) {
+    cached = new MultiResendEmailService();
+  } else if (hasResendKey()) {
+    cached = new ResendEmailService(process.env.RESEND_API_KEY as string);
+  } else {
+    cached = new LogEmailService();
+  }
   return cached;
 };
 

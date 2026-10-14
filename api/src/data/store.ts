@@ -376,9 +376,15 @@ export const __resetStore = (): void => {
 
   // Edge case: devanduraipragash@gmail.com is an ephemeral demo account.
   // It gets removed on every store reset (server restart) so you always start fresh.
-  const idx = users.findIndex((u) => u.email === 'devanduraipragash@gmail.com');
-  if (idx !== -1) {
-    users.splice(idx, 1);
+  const ephemeralEmails = [
+    'devanduraipragash@gmail.com',
+    '25cu0310065@student.hindustanuniv.ac.in',
+  ];
+  for (const email of ephemeralEmails) {
+    const idx = users.findIndex((u) => u.email === email);
+    if (idx !== -1) {
+      users.splice(idx, 1);
+    }
   }
 };
 

@@ -7,6 +7,13 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
+// DEV: force log driver so OTP codes print to console
+if (process.env.NODE_ENV !== 'production') {
+  const { setForceLogDriver } = require('./services/email');
+  setForceLogDriver(true);
+  console.log('[email] FORCE LOG DRIVER ENABLED — OTP codes will print to console');
+}
+
 // Import routes
 import authRoutes from './routes/auth';
 import itemRoutes from './routes/items';
