@@ -71,7 +71,7 @@ const run = async () => {
   }
 
   // --- Registration validation ---
-  let r = await post(`${BASE}/auth/register`, { ...NEW_USER, email: 'someone@gmail.com' });
+  let r = await post(`${BASE}/auth/register`, { ...NEW_USER, email: 'someone@yahoo.com' });
   check('register rejects non-campus email', r.status === 400, `status ${r.status}`);
 
   r = await post(`${BASE}/auth/register`, { ...NEW_USER, password: 'short' });
