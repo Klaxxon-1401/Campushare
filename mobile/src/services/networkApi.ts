@@ -128,23 +128,23 @@ export async function setBookingStatus(
   id: string,
   status: BookingStatus
 ): Promise<Booking> {
-  const actionMap: Record<BookingStatus, string> = {
-    accepted: 'accept',
-    declined: 'decline',
-    paid: 'pay',
-    active: 'pickup',
-    returned: 'return',
-    cancelled: 'cancel',
-    requested: 'requested',
-    disputed: 'disputed',
+  const actionMap: Record<BookingStatus, { action: string; method: 'POST' | 'PATCH' }> = {
+    accepted: { action: 'accept', method: 'PATCH' },
+    declined: { action: 'decline', method: 'PATCH' },
+    paid: { action: 'pay', method: 'POST' },
+    active: { action: 'pickup', method: 'POST' },
+    returned: { action: 'return', method: 'POST' },
+    cancelled: { action: 'cancel', method: 'PATCH' },
+    requested: { action: 'requested', method: 'PATCH' },
+    disputed: { action: 'disputed', method: 'PATCH' },
   };
-  const action = actionMap[status];
+  const { action, method } = actionMap[status];
   if (!action || action === status) {
     throw new HttpApiError(400, 'BAD_STATE', `Cannot transition to ${status} directly`);
   }
   const response = await authedRequest<{ booking: Booking }>(
     `${API_BASE}/bookings/${id}/${action}`,
-    { method: 'PATCH' }
+    { method }
   );
   return response.booking;
 }
