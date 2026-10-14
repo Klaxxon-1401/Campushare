@@ -9,8 +9,10 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { colors, typography, spacing, borders } from '../../theme';
 import { Button, CategoryChips, Input, ScreenHeader } from '../../components';
 import { CATEGORY_OPTIONS, CAMPUS_LOCATIONS, SUGGESTED_DEPOSIT, SUGGESTED_RATE } from '../../constants/catalog';
@@ -40,6 +42,43 @@ export const CreateListingScreen: React.FC<StackScreenProps<'CreateListing'>> = 
   const [price, setPrice] = useState('');
   const [deposit, setDeposit] = useState('');
   const [location, setLocation] = useState(CAMPUS_LOCATIONS[0]);
+  const [photos, setPhotos] = useState<string[]>([]);
+
+  const requestCameraPermission = async (): Promise<boolean> => {
+    const camera = await ImagePicker.requestCameraPermissionsAsync();
+    if (!camera.granted) {
+      Alert.alert('Permission needed', 'Camera access is required to take photos.');
+    }
+    return camera.granted;
+  };
+
+  const capturePhoto = async () => {
+    const granted = await requestCameraPermission();
+    if (!granted) return;
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.7,
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+    if (!result.canceled && result.assets[0]) {
+      setPhotos((prev) => [...prev, result.assets[0].uri]);
+    }
+  };
+
+  const pickFromLibrary = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      quality: 0.7,
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+    if (!result.canceled && result.assets[0]) {
+      setPhotos((prev) => [...prev, result.assets[0].uri]);
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
     if (!editingId) return;
@@ -95,7 +134,7 @@ export const CreateListingScreen: React.FC<StackScreenProps<'CreateListing'>> = 
         pricePerDay: priceNum,
         deposit: depositNum,
         location,
-        photos: [],
+        photos,
       };
       const item = isEdit && editingId
         ? await api.updateItem(editingId, draft)
@@ -179,13 +218,37 @@ export const CreateListingScreen: React.FC<StackScreenProps<'CreateListing'>> = 
 
         {step === 1 && (
           <>
-            <View style={styles.photoBox}>
-              <Feather name="camera" size={28} color={colors.primary.main} />
-              <Text style={styles.photoTitle}>Condition photos</Text>
-              <Text style={styles.photoHint}>
-                In-app camera capture arrives in the next milestone. Your listing will still publish
-                now and you can add photos later.
-              </Text>
+            {photos.length > 0 ? (
+              <View style={styles.photoPreview}>
+                <Text style={styles.photoTitle}>Condition photos ({photos.length}/12)</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoScroll}>
+                  {photos.map((uri, index) => (
+                    <View key={uri} style={styles.photoItem}>
+                      <Image source={{ uri }} style={styles.photoImage} />
+                      <TouchableOpacity style={styles.removeButton} onPress={() => removePhoto(index)}>
+                        <Feather name="x" size={14} color={colors.neutral.background} />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            ) : (
+              <View style={styles.photoBox}>
+                <Feather name="camera" size={28} color={colors.primary.main} />
+                <Text style={styles.photoTitle}>Condition photos</Text>
+                <Text style={styles.photoHint}>Add photos to show the item's condition (max 12)</Text>
+              </View>
+            )}
+
+            <View style={styles.photoActions} pointerEvents={photos.length >= 12 ? 'none' : 'auto'}>
+              <TouchableOpacity style={styles.captureButton} onPress={capturePhoto} disabled={photos.length >= 12}>
+                <Feather name="camera" size={18} color={colors.primary.contrast} />
+                <Text style={styles.captureButtonText}>{photos.length === 0 ? 'Take photo' : 'Add more'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.libraryButton} onPress={pickFromLibrary} disabled={photos.length >= 12}>
+                <Feather name="image" size={18} color={colors.primary.main} />
+                <Text style={styles.libraryButtonText}>Choose from gallery</Text>
+              </TouchableOpacity>
             </View>
 
             <Input
@@ -331,6 +394,73 @@ const styles = StyleSheet.create({
     color: colors.neutral.textSecondary,
     textAlign: 'center',
     lineHeight: typography.sizes.small * typography.lineHeights.normal,
+  },
+  photoPreview: {
+    marginBottom: spacing[4],
+  },
+  photoScroll: {
+    flexDirection: 'row',
+    gap: spacing[3],
+    paddingBottom: spacing[2],
+  },
+  photoItem: {
+    position: 'relative',
+    width: 120,
+    height: 120,
+    borderRadius: borders.radius.md,
+    overflow: 'hidden',
+    backgroundColor: colors.neutral.border,
+  },
+  photoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  removeButton: {
+    position: 'absolute',
+    top: spacing[1],
+    right: spacing[1],
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.state.error,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoActions: {
+    flexDirection: 'row',
+    gap: spacing[3],
+    marginBottom: spacing[4],
+    flexWrap: 'wrap',
+  },
+  captureButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+    backgroundColor: colors.primary.main,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[2],
+    borderRadius: borders.radius.md,
+  },
+  captureButtonText: {
+    fontFamily: typography.fonts.bodyBold,
+    fontSize: typography.sizes.body,
+    color: colors.primary.contrast,
+  },
+  libraryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+    backgroundColor: colors.neutral.surface,
+    borderWidth: borders.width.thin,
+    borderColor: colors.neutral.border,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[2],
+    borderRadius: borders.radius.md,
+  },
+  libraryButtonText: {
+    fontFamily: typography.fonts.bodyBold,
+    fontSize: typography.sizes.body,
+    color: colors.primary.main,
   },
   reviewCard: {
     backgroundColor: colors.neutral.surface,
