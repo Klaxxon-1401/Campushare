@@ -13,9 +13,10 @@ Read alongside `PROJECT_PLAN.md` (the plan) and `README.md` (how to run).
 > multi-key Resend with `onboarding@resend.dev` sender delivers to both
 > `devanduraipragash@gmail.com` (fallback key) and `25cu0310065@student.hindustanuniv.ac.in`
 > (dedicated key). **Items & bookings screens now call the protected API** (`networkApi.ts` +
-> hybrid `api.ts`). Remaining: verify a custom domain for arbitrary student emails, move payments/
-> evidence/reviews/disputes/messages/notifications to the API, and run the live 20–30 student
-> beta/UAT (§11). All work is committed locally and **pushed to GitHub**.
+> hybrid `api.ts`); **full booking flow verified** (create → accept → pay → pickup → return →
+> confirm-return with role-based authorization). Remaining: verify a custom domain for arbitrary
+> student emails, move payments/evidence/reviews/disputes/messages/notifications to the API, and
+> run the live 20–30 student beta/UAT (§11). All work is committed locally and **pushed to GitHub**.
 >
 > **2026-10-13 fix — Home category-filter row clipped its chips:** a horizontal `ScrollView` keeps
 > `flexShrink: 1` by default, so the row shrank below its content height and clipped the pills (a
